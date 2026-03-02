@@ -20,3 +20,6 @@ Auth/DB/Storage = Supabase.
 
 ## D6. Flow model
 Flow линейный: шаг `N -> N+1`.
+
+## D7. MVP auth
+Аутентификация в MVP: Supabase magic link (email OTP), базовая защита страниц через middleware с редиректом на `/login`.

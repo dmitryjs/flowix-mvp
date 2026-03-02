@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AuthSessionSync from "@/app/auth-session-sync";
 
 export const metadata: Metadata = {
   title: "Flowix MVP",
@@ -12,7 +13,10 @@ type RootLayoutProps = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body>
+        <AuthSessionSync />
+        {children}
+      </body>
     </html>
   );
 }
