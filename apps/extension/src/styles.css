@@ -20,4 +20,23 @@ h1 {
 .actions {
   display: flex;
   gap: 8px;
+  margin-top: 10px;
 }
+
+label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#message {
+  margin: 10px 0 0;
+  min-height: 16px;
+  font-size: 12px;
+}
+

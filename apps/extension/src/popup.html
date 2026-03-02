@@ -9,11 +9,14 @@
     <main>
       <h1>Flowix</h1>
       <p id="status">Recording: OFF</p>
+      <label for="projectIdInput">Project ID</label>
+      <input id="projectIdInput" type="text" placeholder="project id" />
       <div class="actions">
         <button id="startBtn" type="button">Start</button>
         <button id="stopBtn" type="button">Stop</button>
         <button id="captureBtn" type="button">Capture</button>
       </div>
+      <p id="message"></p>
     </main>
     <script type="module" src="./popup.ts"></script>
   </body>
