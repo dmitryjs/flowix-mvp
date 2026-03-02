@@ -23,3 +23,6 @@ Flow линейный: шаг `N -> N+1`.
 
 ## D7. MVP auth
 Аутентификация в MVP: Supabase magic link (email OTP), базовая защита страниц через middleware с редиректом на `/login`.
+
+## D8. Web MVP data access
+Для MVP страницы проектов/flow используют прямой CRUD из web-клиента через Supabase client (без API routes).
