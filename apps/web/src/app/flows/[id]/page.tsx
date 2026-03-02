@@ -27,7 +27,35 @@ export default function FlowPage() {
   const [file, setFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const [steps, setSteps] = useState<FlowStep[]>([]);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+
+  const loadSignedUrls = async (stepsList: FlowStep[]) => {
+    if (!storageBucket) {
+      setSignedUrls({});
+      return;
+    }
+
+    const urlEntries = await Promise.all(
+      stepsList.map(async (step) => {
+        if (!step.screenshot_path) {
+          return [step.id, ""] as const;
+        }
+
+        const { data, error: signedUrlError } = await supabase.storage
+          .from(storageBucket)
+          .createSignedUrl(step.screenshot_path, 60 * 10);
+
+        if (signedUrlError || !data?.signedUrl) {
+          return [step.id, ""] as const;
+        }
+
+        return [step.id, data.signedUrl] as const;
+      })
+    );
+
+    setSignedUrls(Object.fromEntries(urlEntries));
+  };
 
   useEffect(() => {
     const loadFlow = async () => {
@@ -72,7 +100,9 @@ export default function FlowPage() {
         return;
       }
 
-      setSteps((stepsData ?? []) as FlowStep[]);
+      const nextSteps = (stepsData ?? []) as FlowStep[];
+      setSteps(nextSteps);
+      await loadSignedUrls(nextSteps);
       setLoading(false);
     };
 
@@ -91,7 +121,9 @@ export default function FlowPage() {
       return;
     }
 
-    setSteps((stepsData ?? []) as FlowStep[]);
+    const nextSteps = (stepsData ?? []) as FlowStep[];
+    setSteps(nextSteps);
+    await loadSignedUrls(nextSteps);
   };
 
   const handleUpload = async (event: FormEvent<HTMLFormElement>) => {
@@ -171,17 +203,16 @@ export default function FlowPage() {
           {steps.length > 0 ? (
             <ul>
               {steps.map((step, index) => {
-                const imageUrl =
-                  step.screenshot_path && storageBucket
-                    ? supabase.storage
-                        .from(storageBucket)
-                        .getPublicUrl(step.screenshot_path).data.publicUrl
-                    : "";
+                const imageUrl = signedUrls[step.id];
 
                 return (
                   <li key={step.id ?? `${step.step_index}-${index}`}>
                     <p>Step {index + 1}</p>
-                    {imageUrl ? <img src={imageUrl} alt={`Step ${index + 1}`} /> : null}
+                    {imageUrl ? (
+                      <img src={imageUrl} alt={`Step ${index + 1}`} />
+                    ) : (
+                      <p>Screenshot unavailable</p>
+                    )}
                     <p>{step.url ?? "No URL"}</p>
                     {index < steps.length - 1 ? <hr /> : null}
                   </li>
