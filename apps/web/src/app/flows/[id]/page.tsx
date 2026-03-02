@@ -12,7 +12,7 @@ type Flow = {
 export default function FlowPage() {
   const params = useParams<{ id: string }>();
   const flowId = params.id;
-  const storageBucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET;
+  const storageBucket = process.env.SUPABASE_STORAGE_BUCKET;
 
   const [flow, setFlow] = useState<Flow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,7 +68,7 @@ export default function FlowPage() {
     }
 
     if (!storageBucket) {
-      setError("NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET is not configured");
+      setError("SUPABASE_STORAGE_BUCKET is not configured");
       return;
     }
 
