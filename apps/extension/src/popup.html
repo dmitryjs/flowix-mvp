@@ -8,7 +8,13 @@
   <body>
     <main>
       <h1>Flowix</h1>
-      <p id="status">Recording: OFF</p>
+      <div id="statusPanel">
+        <p id="statusRecording">Recording: OFF</p>
+        <p id="statusProject">Project ID: missing</p>
+        <p id="statusToken">Token: missing</p>
+        <p id="statusFlow">Current flow: none</p>
+        <p id="statusStep">Next step index: 0</p>
+      </div>
       <label for="projectIdInput">Project ID</label>
       <input id="projectIdInput" type="text" placeholder="project id" />
       <label for="accessTokenInput">Access Token</label>
