@@ -26,3 +26,6 @@ Flow линейный: шаг `N -> N+1`.
 
 ## D8. Web MVP data access
 Для MVP страницы проектов/flow используют прямой CRUD из web-клиента через Supabase client (без API routes).
+
+## D9. Extension server routes
+Для интеграции extension добавлены server API routes в `apps/web` для создания flow и загрузки step-файла через Supabase Storage (service role на сервере).

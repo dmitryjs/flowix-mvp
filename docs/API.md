@@ -10,53 +10,55 @@
 - `500 Internal Server Error` — внутренняя ошибка сервера.
 
 ## POST /api/flows
-Create flow.
+Create flow (server route for extension).
 
 Request JSON:
 ```json
 {
-  "title": "Checkout flow",
-  "source": "extension"
+  "projectId": "proj_123",
+  "name": "Checkout flow",
+  "ownerId": "user_123"
 }
 ```
+
+Headers:
+- `x-owner-id: user_123` (должен совпадать с `ownerId`).
 
 Response:
 - `201 Created`
 ```json
 {
-  "id": "flow_123",
-  "title": "Checkout flow",
-  "createdAt": "2026-03-02T10:00:00.000Z"
+  "id": "flow_123"
 }
 ```
 
-Errors: `400`, `401`, `500`.
+Errors: `400`, `401`, `403`, `500`.
 
 ## POST /api/flows/:id/steps
-Upload step metadata + screenshot ref.
+Upload step (multipart/form-data).
 
-Request JSON:
-```json
-{
-  "index": 1,
-  "title": "Open cart",
-  "url": "https://example.com/cart",
-  "screenshotRef": "screenshots/flow_123/step_1.png",
-  "capturedAt": "2026-03-02T10:01:00.000Z"
-}
-```
+Request (`multipart/form-data`):
+- `file` (png/jpg)
+- `url` (string)
+- `stepIndex` (number)
+- `clickX` (optional)
+- `clickY` (optional)
+- `viewportW` (optional)
+- `viewportH` (optional)
+- `ownerId` (string)
+
+Headers:
+- `x-owner-id` (должен совпадать с `ownerId`).
 
 Response:
 - `201 Created`
 ```json
 {
-  "id": "step_1",
-  "flowId": "flow_123",
-  "index": 1
+  "stepId": "step_1"
 }
 ```
 
-Errors: `400`, `401`, `403`, `404`, `500`.
+Errors: `400`, `401`, `403`, `500`.
 
 ## GET /api/flows/:id
 Get flow.
