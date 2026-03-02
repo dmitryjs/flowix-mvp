@@ -44,7 +44,8 @@ async function captureStep(): Promise<CaptureResult> {
       "recording",
       "currentFlowId",
       "stepIndex",
-      "projectId"
+      "projectId",
+      "accessToken"
     ]);
 
     if (state.recording !== true) {
@@ -64,7 +65,11 @@ async function captureStep(): Promise<CaptureResult> {
     const dataUrl = await chrome.tabs.captureVisibleTab(undefined, { format: "png" });
     const file = dataUrlToFile(dataUrl, `step-${Date.now()}.png`);
 
-    const accessToken = await getAccessToken();
+    const accessToken =
+      typeof state.accessToken === "string" ? state.accessToken.trim() : "";
+    if (!accessToken) {
+      throw new Error("Paste access token first");
+    }
     let flowId = typeof state.currentFlowId === "string" ? state.currentFlowId : null;
 
     if (!flowId) {
@@ -127,31 +132,6 @@ async function captureStep(): Promise<CaptureResult> {
       error: error instanceof Error ? error.message : "Capture failed"
     };
   }
-}
-
-async function getAccessToken(): Promise<string> {
-  const includeResponse = await fetch(`${WEB_APP_URL}/api/auth/token`, {
-    credentials: "include"
-  });
-
-  if (includeResponse.ok) {
-    const data = (await includeResponse.json()) as { accessToken?: string };
-    if (data.accessToken) {
-      return data.accessToken;
-    }
-  }
-
-  const fallbackResponse = await fetch(`${WEB_APP_URL}/api/auth/token`);
-  if (!fallbackResponse.ok) {
-    throw new Error("Unable to get access token");
-  }
-
-  const fallbackData = (await fallbackResponse.json()) as { accessToken?: string };
-  if (!fallbackData.accessToken) {
-    throw new Error("Access token missing in response");
-  }
-
-  return fallbackData.accessToken;
 }
 
 function dataUrlToFile(dataUrl: string, filename: string): File {
