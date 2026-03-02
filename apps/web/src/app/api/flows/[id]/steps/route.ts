@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getAuthorizedUserId } from "@/lib/auth-server";
 
 const uploadStepSchema = z.object({
   file: z
@@ -27,19 +28,15 @@ const uploadStepSchema = z.object({
     (value) => (value === "" || value == null ? undefined : value),
     z.coerce.number().optional()
   ),
-  ownerId: z.string().min(1),
 });
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const ownerHeader = request.headers.get("x-owner-id");
-  if (!ownerHeader) {
-    return NextResponse.json(
-      { error: "x-owner-id header is required" },
-      { status: 401 }
-    );
+  const ownerId = await getAuthorizedUserId(request);
+  if (!ownerId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { id: flowId } = await context.params;
@@ -62,21 +59,12 @@ export async function POST(
     clickY: formData.get("clickY"),
     viewportW: formData.get("viewportW"),
     viewportH: formData.get("viewportH"),
-    ownerId: formData.get("ownerId"),
   });
 
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
       { status: 400 }
-    );
-  }
-
-  // TODO: Replace temporary x-owner-id check with proper auth/session validation.
-  if (ownerHeader !== parsed.data.ownerId) {
-    return NextResponse.json(
-      { error: "x-owner-id does not match ownerId" },
-      { status: 403 }
     );
   }
 
@@ -88,8 +76,23 @@ export async function POST(
     );
   }
 
-  const filePath = `user/${parsed.data.ownerId}/flows/${flowId}/${crypto.randomUUID()}.png`;
   const supabase = createSupabaseServerClient();
+  const { data: flow, error: flowError } = await supabase
+    .from("flows")
+    .select("id")
+    .eq("id", flowId)
+    .eq("owner_id", ownerId)
+    .maybeSingle();
+
+  if (flowError) {
+    return NextResponse.json({ error: flowError.message }, { status: 500 });
+  }
+
+  if (!flow) {
+    return NextResponse.json({ error: "Flow not found" }, { status: 404 });
+  }
+
+  const filePath = `user/${ownerId}/flows/${flowId}/${crypto.randomUUID()}.png`;
 
   const { error: uploadError } = await supabase.storage
     .from(storageBucket)

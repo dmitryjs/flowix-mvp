@@ -29,3 +29,6 @@ Flow линейный: шаг `N -> N+1`.
 
 ## D9. Extension server routes
 Для интеграции extension добавлены server API routes в `apps/web` для создания flow и загрузки step-файла через Supabase Storage (service role на сервере).
+
+## D10. Extension API auth
+Авторизация extension API выполняется через `Authorization: Bearer <supabase_access_token>`, `owner_id` определяется на сервере по токену.

@@ -16,13 +16,13 @@ Request JSON:
 ```json
 {
   "projectId": "proj_123",
-  "name": "Checkout flow",
-  "ownerId": "user_123"
+  "name": "Checkout flow"
 }
 ```
 
 Headers:
-- `x-owner-id: user_123` (должен совпадать с `ownerId`).
+- `Authorization: Bearer <supabase_access_token>`.
+- `ownerId` не передается в payload, определяется на сервере из токена.
 
 Response:
 - `201 Created`
@@ -32,7 +32,7 @@ Response:
 }
 ```
 
-Errors: `400`, `401`, `403`, `500`.
+Errors: `400`, `401`, `404`, `500`.
 
 ## POST /api/flows/:id/steps
 Upload step (multipart/form-data).
@@ -45,10 +45,10 @@ Request (`multipart/form-data`):
 - `clickY` (optional)
 - `viewportW` (optional)
 - `viewportH` (optional)
-- `ownerId` (string)
 
 Headers:
-- `x-owner-id` (должен совпадать с `ownerId`).
+- `Authorization: Bearer <supabase_access_token>`.
+- `ownerId` не передается в form-data, определяется на сервере из токена.
 
 Response:
 - `201 Created`
@@ -58,7 +58,7 @@ Response:
 }
 ```
 
-Errors: `400`, `401`, `403`, `500`.
+Errors: `400`, `401`, `404`, `500`.
 
 ## GET /api/flows/:id
 Get flow.

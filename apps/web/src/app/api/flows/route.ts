@@ -1,20 +1,17 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getAuthorizedUserId } from "@/lib/auth-server";
 
 const createFlowSchema = z.object({
   projectId: z.string().min(1),
   name: z.string().min(1),
-  ownerId: z.string().min(1),
 });
 
 export async function POST(request: Request) {
-  const ownerHeader = request.headers.get("x-owner-id");
-  if (!ownerHeader) {
-    return NextResponse.json(
-      { error: "x-owner-id header is required" },
-      { status: 401 }
-    );
+  const ownerId = await getAuthorizedUserId(request);
+  if (!ownerId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body: unknown;
@@ -32,22 +29,29 @@ export async function POST(request: Request) {
     );
   }
 
-  // TODO: Replace temporary x-owner-id check with proper auth/session validation.
-  if (ownerHeader !== parsed.data.ownerId) {
-    return NextResponse.json(
-      { error: "x-owner-id does not match ownerId" },
-      { status: 403 }
-    );
+  const supabase = createSupabaseServerClient();
+
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("id")
+    .eq("id", parsed.data.projectId)
+    .eq("owner_id", ownerId)
+    .maybeSingle();
+
+  if (projectError) {
+    return NextResponse.json({ error: projectError.message }, { status: 500 });
   }
 
-  const supabase = createSupabaseServerClient();
+  if (!project) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
 
   const { data, error } = await supabase
     .from("flows")
     .insert({
       project_id: parsed.data.projectId,
       name: parsed.data.name,
-      owner_id: parsed.data.ownerId,
+      owner_id: ownerId,
     })
     .select("id")
     .single();
