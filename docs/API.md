@@ -60,6 +60,22 @@ Response:
 
 Errors: `400`, `401`, `404`, `500`.
 
+## GET /api/auth/token
+Возвращает `accessToken` текущей Supabase session.
+
+Headers:
+- Cookie-based auth (требуется авторизованная сессия в cookie).
+
+Response:
+- `200 OK`
+```json
+{
+  "accessToken": "<token>"
+}
+```
+
+Errors: `401`, `500`.
+
 ## GET /api/flows/:id
 Get flow.
 

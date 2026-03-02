@@ -32,3 +32,6 @@ Flow линейный: шаг `N -> N+1`.
 
 ## D10. Extension API auth
 Авторизация extension API выполняется через `Authorization: Bearer <supabase_access_token>`, `owner_id` определяется на сервере по токену.
+
+## D11. Extension token endpoint
+Для extension добавлен endpoint `GET /api/auth/token`, который отдает access token текущей cookie-based сессии.
