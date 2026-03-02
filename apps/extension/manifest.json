@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Flowix MVP Extension",
+  "version": "0.1.0",
+  "action": {
+    "default_title": "Flowix",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["storage", "activeTab"]
+}
