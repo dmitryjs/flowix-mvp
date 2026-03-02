@@ -9,6 +9,13 @@ type Flow = {
   name: string;
 };
 
+type FlowStep = {
+  id: string;
+  step_index: number;
+  url: string | null;
+  screenshot_path: string | null;
+};
+
 export default function FlowPage() {
   const params = useParams<{ id: string }>();
   const flowId = params.id;
@@ -19,6 +26,7 @@ export default function FlowPage() {
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  const [steps, setSteps] = useState<FlowStep[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,11 +59,40 @@ export default function FlowPage() {
       }
 
       setFlow((data as Flow | null) ?? null);
+
+      const { data: stepsData, error: stepsError } = await supabase
+        .from("flow_steps")
+        .select("*")
+        .eq("flow_id", flowId)
+        .order("step_index", { ascending: true });
+
+      if (stepsError) {
+        setError(stepsError.message);
+        setLoading(false);
+        return;
+      }
+
+      setSteps((stepsData ?? []) as FlowStep[]);
       setLoading(false);
     };
 
     void loadFlow();
   }, [flowId]);
+
+  const refreshSteps = async () => {
+    const { data: stepsData, error: stepsError } = await supabase
+      .from("flow_steps")
+      .select("*")
+      .eq("flow_id", flowId)
+      .order("step_index", { ascending: true });
+
+    if (stepsError) {
+      setError(stepsError.message);
+      return;
+    }
+
+    setSteps((stepsData ?? []) as FlowStep[]);
+  };
 
   const handleUpload = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -116,6 +153,7 @@ export default function FlowPage() {
 
     setUploadMessage("Screenshot uploaded");
     setFile(null);
+    await refreshSteps();
     setUploading(false);
   };
 
@@ -129,7 +167,28 @@ export default function FlowPage() {
       {!loading && flow ? (
         <section>
           <h2>Steps</h2>
-          <p>No steps yet</p>
+          {steps.length === 0 ? <p>No steps yet</p> : null}
+          {steps.length > 0 ? (
+            <ul>
+              {steps.map((step, index) => {
+                const imageUrl =
+                  step.screenshot_path && storageBucket
+                    ? supabase.storage
+                        .from(storageBucket)
+                        .getPublicUrl(step.screenshot_path).data.publicUrl
+                    : "";
+
+                return (
+                  <li key={step.id ?? `${step.step_index}-${index}`}>
+                    <p>Step {index + 1}</p>
+                    {imageUrl ? <img src={imageUrl} alt={`Step ${index + 1}`} /> : null}
+                    <p>{step.url ?? "No URL"}</p>
+                    {index < steps.length - 1 ? <hr /> : null}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
         </section>
       ) : null}
 
