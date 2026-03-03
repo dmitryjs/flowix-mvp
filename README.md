@@ -30,6 +30,7 @@ npm run dev:web
 - Public: `false`
 - `apps/web/.env.local` должен содержать:
   - `SUPABASE_STORAGE_BUCKET=flowix-screens`
+  - `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET=flowix-screens`
 
 ## Команды
 - `lint` — TBD

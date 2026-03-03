@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { PUBLIC_STORAGE_BUCKET } from "@/lib/env";
 
 type Flow = {
   id: string;
@@ -19,7 +20,7 @@ type FlowStep = {
 export default function FlowPage() {
   const params = useParams<{ id: string }>();
   const flowId = params.id;
-  const storageBucket = process.env.SUPABASE_STORAGE_BUCKET;
+  const storageBucket = PUBLIC_STORAGE_BUCKET;
 
   const [flow, setFlow] = useState<Flow | null>(null);
   const [loading, setLoading] = useState(true);
