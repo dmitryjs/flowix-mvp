@@ -25,6 +25,15 @@ npm install
 npm run dev:web
 ```
 
+## Smoke test
+```bash
+cd D:\Flowix-MVP\flowix-mvp
+npm run dev:web
+npm run build:extension
+curl -i -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/flows/<FLOW_ID>
+```
+- Открыть storyboard (`/flows/<FLOW_ID>`) и убедиться, что шаги и скриншоты отображаются.
+
 ### Supabase Storage (MVP)
 - Bucket name: `flowix-screens`
 - Public: `false`

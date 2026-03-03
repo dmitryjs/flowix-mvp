@@ -29,3 +29,15 @@
 2. Проверить, что клиентские переменные начинаются с `NEXT_PUBLIC_`.
 3. Проверить, что серверные секреты не доступны на клиенте.
 4. Перезапустить dev-сервер после изменения env.
+
+## 6) Extension API returns HTML / redirect
+1. Симптом: extension получает HTML страницы login вместо JSON от `/api/*`.
+2. Причина: middleware применился к API и сделал redirect на `/login`.
+3. Проверка: `curl -i http://localhost:3000/api/flows/<flow_id>` должен вернуть JSON (`401/404`), но не `text/html`.
+4. Проверка: в `Network` у `/api/*` не должно быть 30x редиректа на `/login`.
+
+## 7) "supabaseUrl is required" / env ошибка Supabase
+1. Проверить наличие `NEXT_PUBLIC_SUPABASE_URL` и `NEXT_PUBLIC_SUPABASE_ANON_KEY` в `apps/web/.env.local`.
+2. Проверить `SUPABASE_STORAGE_BUCKET` и `NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET` в `apps/web/.env.local`.
+3. После изменения env полностью перезапустить `npm run dev:web`.
+4. Если ошибка сохраняется, выполнить `npm run build --workspace=web` и проверить текст ошибки на пропущенные env.
