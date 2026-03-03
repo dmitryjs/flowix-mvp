@@ -30,6 +30,46 @@ const uploadStepSchema = z.object({
   ),
 });
 
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const ownerId = await getAuthorizedUserId(request);
+  if (!ownerId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id: flowId } = await context.params;
+  const supabase = createSupabaseServerClient();
+
+  const { data: flow, error: flowError } = await supabase
+    .from("flows")
+    .select("id")
+    .eq("id", flowId)
+    .eq("owner_id", ownerId)
+    .maybeSingle();
+
+  if (flowError) {
+    return NextResponse.json({ error: flowError.message }, { status: 500 });
+  }
+
+  if (!flow) {
+    return NextResponse.json({ error: "Flow not found" }, { status: 404 });
+  }
+
+  const { data: steps, error: stepsError } = await supabase
+    .from("flow_steps")
+    .select("*")
+    .eq("flow_id", flowId)
+    .order("step_index", { ascending: true });
+
+  if (stepsError) {
+    return NextResponse.json({ error: stepsError.message }, { status: 500 });
+  }
+
+  return NextResponse.json(steps ?? [], { status: 200 });
+}
+
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
