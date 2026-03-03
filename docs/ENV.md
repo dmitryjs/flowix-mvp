@@ -8,3 +8,4 @@
 - `SUPABASE_STORAGE_BUCKET` — имя bucket для хранения скриншотов шагов.
 - `NEXT_PUBLIC_APP_URL` — базовый URL web-приложения (клиентские ссылки/редиректы).
 - `EXTENSION_APP_URL` — URL web-приложения, который использует extension (deep link/переходы), если требуется.
+- `NEXT_IGNORE_INCORRECT_LOCKFILE` — фикс для npm workspaces + Next lockfile patch (позволяет игнорировать некорректный lockfile-патчинг Next).
