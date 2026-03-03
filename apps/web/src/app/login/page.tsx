@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,6 +14,7 @@ export default function LoginPage() {
     setLoading(true);
     setMessage(null);
     setError(null);
+    const supabase = getSupabaseClient();
 
     const { error: signInError } = await supabase.auth.signInWithOtp({
       email,

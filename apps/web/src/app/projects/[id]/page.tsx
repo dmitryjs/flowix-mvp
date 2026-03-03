@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 
 type Flow = {
   id: string;
@@ -29,6 +29,7 @@ export default function ProjectPage() {
 
   useEffect(() => {
     const loadProjectData = async () => {
+      const supabase = getSupabaseClient();
       setLoading(true);
       setError(null);
 
@@ -83,6 +84,7 @@ export default function ProjectPage() {
   const handleCreateFlow = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!userId || !newFlowName.trim()) return;
+    const supabase = getSupabaseClient();
 
     setCreating(true);
     setError(null);

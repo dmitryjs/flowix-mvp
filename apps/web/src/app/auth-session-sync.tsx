@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 
 const AUTH_COOKIE_NAME = "flowix-auth";
 
@@ -20,6 +20,7 @@ function setAuthCookie(isAuthorized: boolean) {
 
 export default function AuthSessionSync() {
   useEffect(() => {
+    const supabase = getSupabaseClient();
     let isMounted = true;
 
     const syncSession = async () => {

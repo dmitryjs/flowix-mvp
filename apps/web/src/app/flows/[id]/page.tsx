@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { PUBLIC_STORAGE_BUCKET } from "@/lib/env";
 
 type Flow = {
@@ -32,6 +32,7 @@ export default function FlowPage() {
   const [error, setError] = useState<string | null>(null);
 
   const loadSignedUrls = async (stepsList: FlowStep[]) => {
+    const supabase = getSupabaseClient();
     if (!storageBucket) {
       setSignedUrls({});
       return;
@@ -60,6 +61,7 @@ export default function FlowPage() {
 
   useEffect(() => {
     const loadFlow = async () => {
+      const supabase = getSupabaseClient();
       setLoading(true);
       setError(null);
 
@@ -111,6 +113,7 @@ export default function FlowPage() {
   }, [flowId]);
 
   const refreshSteps = async () => {
+    const supabase = getSupabaseClient();
     const { data: stepsData, error: stepsError } = await supabase
       .from("flow_steps")
       .select("*")
@@ -131,6 +134,7 @@ export default function FlowPage() {
     event.preventDefault();
     setUploadMessage(null);
     setError(null);
+    const supabase = getSupabaseClient();
 
     if (!file) {
       setError("Choose a file");

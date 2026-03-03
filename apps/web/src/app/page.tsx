@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 
 type Project = {
   id: string;
@@ -19,6 +19,7 @@ export default function ProjectsDashboardPage() {
 
   useEffect(() => {
     const loadProjects = async () => {
+      const supabase = getSupabaseClient();
       setLoading(true);
       setError(null);
 
@@ -57,6 +58,7 @@ export default function ProjectsDashboardPage() {
   const handleCreateProject = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!userId || !newProjectName.trim()) return;
+    const supabase = getSupabaseClient();
 
     setCreating(true);
     setError(null);
