@@ -9,12 +9,21 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico" ||
-    pathname.startsWith("/login")
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/auth")
   ) {
     return NextResponse.next();
   }
 
-  const isAuthorized = request.cookies.get(AUTH_COOKIE_NAME)?.value === "1";
+  const hasSupabaseAuthCookie = request.cookies
+    .getAll()
+    .some(
+      (cookie) =>
+        cookie.name.startsWith("sb-") && cookie.name.includes("auth-token")
+    );
+  const isAuthorized =
+    request.cookies.get(AUTH_COOKIE_NAME)?.value === "1" ||
+    hasSupabaseAuthCookie;
   if (isAuthorized) {
     return NextResponse.next();
   }

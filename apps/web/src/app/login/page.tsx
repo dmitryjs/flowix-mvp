@@ -2,6 +2,9 @@
 
 import { FormEvent, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,7 +22,7 @@ export default function LoginPage() {
     const { error: signInError } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/login`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
@@ -34,25 +37,30 @@ export default function LoginPage() {
   };
 
   return (
-    <main>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="you@example.com"
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? "Sending..." : "Send magic link"}
-        </button>
-      </form>
-      {message ? <p>{message}</p> : null}
-      {error ? <p>{error}</p> : null}
+    <main className="mx-auto flex min-h-screen max-w-md items-center p-6">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Login</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
+            />
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? "Sending..." : "Send magic link"}
+            </Button>
+          </form>
+          {message ? <p className="text-sm text-green-600">{message}</p> : null}
+          {error ? <p className="text-sm text-red-500">{error}</p> : null}
+        </CardContent>
+      </Card>
     </main>
   );
 }

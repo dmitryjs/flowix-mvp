@@ -6,25 +6,44 @@
     <title>Flowix Popup</title>
   </head>
   <body>
-    <main>
-      <h1>Flowix</h1>
-      <div id="statusPanel">
+    <main class="popup">
+      <header class="header">
+        <h1>Flowix Recorder</h1>
+        <p class="hint">Start recording and capture clicks automatically.</p>
+      </header>
+
+      <section class="card" id="statusPanel">
         <p id="statusRecording">Recording: OFF</p>
-        <p id="statusProject">Project ID: missing</p>
-        <p id="statusToken">Token: missing</p>
+        <p id="statusProject">Project: not selected</p>
+        <p id="statusToken">Session: missing</p>
         <p id="statusFlow">Current flow: none</p>
         <p id="statusStep">Next step index: 0</p>
+      </section>
+
+      <section class="card">
+        <label for="projectSelect">Project</label>
+        <select id="projectSelect"></select>
+        <p class="hint">Click Sync while a localhost web tab is active.</p>
+      </section>
+
+      <section class="actions">
+        <button id="syncBtn" type="button" class="secondary">Sync</button>
+        <button id="startBtn" type="button" class="primary">Start</button>
+        <button id="stopBtn" type="button" class="secondary">Stop</button>
+        <button id="captureBtn" type="button" class="secondary">Capture now</button>
+      </section>
+
+      <section class="actions">
+        <button id="openFlowBtn" type="button" class="secondary">Open flow</button>
+        <button id="copyFlowBtn" type="button" class="secondary">Copy link</button>
+      </section>
+
+      <div class="card">
+        <p id="flowLinkLabel" class="hint">Flow link</p>
+        <p id="flowLink" class="flow-link">none</p>
       </div>
-      <label for="projectIdInput">Project ID</label>
-      <input id="projectIdInput" type="text" placeholder="project id" />
-      <label for="accessTokenInput">Access Token</label>
-      <textarea id="accessTokenInput" rows="3" placeholder="paste access token"></textarea>
-      <div class="actions">
-        <button id="startBtn" type="button">Start</button>
-        <button id="stopBtn" type="button">Stop</button>
-        <button id="captureBtn" type="button">Capture</button>
-      </div>
-      <p id="message"></p>
+
+      <p id="message" class="message"></p>
     </main>
     <script type="module" src="./popup.ts"></script>
   </body>

@@ -31,9 +31,16 @@ export async function GET() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session?.access_token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (session?.access_token) {
+    return NextResponse.json({ accessToken: session.access_token });
   }
 
-  return NextResponse.json({ accessToken: session.access_token });
+  const fallbackAccessToken = cookieStore.get("flowix-access-token")?.value;
+  if (fallbackAccessToken) {
+    return NextResponse.json({
+      accessToken: decodeURIComponent(fallbackAccessToken),
+    });
+  }
+
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }

@@ -1,42 +1,109 @@
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  min-width: 260px;
+  font-family: Inter, Arial, sans-serif;
+  min-width: 320px;
+  background: #f7f7fb;
+  color: #111827;
 }
 
-main {
+.popup {
   padding: 12px;
+  display: grid;
+  gap: 10px;
 }
 
 h1 {
-  margin: 0 0 8px;
-  font-size: 16px;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.2;
 }
 
-#status {
-  margin: 0 0 10px;
+.header .hint {
+  margin: 4px 0 0;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+#statusPanel p {
+  margin: 0 0 6px;
+  font-size: 12px;
+}
+
+#statusPanel p:last-child {
+  margin-bottom: 0;
 }
 
 .actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
 }
 
 label {
   display: block;
   font-size: 12px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  font-weight: 600;
 }
 
-input {
+select {
   width: 100%;
   box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff;
+  font-size: 13px;
 }
 
-#message {
-  margin: 10px 0 0;
+button {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+button.secondary {
+  background: #fff;
+  color: #111827;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hint {
+  margin: 6px 0 0;
+  min-height: 14px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.flow-link {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #1f2937;
+  word-break: break-all;
+}
+
+.message {
+  margin: 0;
   min-height: 16px;
   font-size: 12px;
 }
-

@@ -28,6 +28,14 @@ const uploadStepSchema = z.object({
     (value) => (value === "" || value == null ? undefined : value),
     z.coerce.number().optional()
   ),
+  selector: z.preprocess(
+    (value) => (value === "" || value == null ? undefined : value),
+    z.string().optional()
+  ),
+  elementRect: z.preprocess(
+    (value) => (value === "" || value == null ? undefined : value),
+    z.string().optional()
+  ),
 });
 
 export async function GET(
@@ -99,6 +107,8 @@ export async function POST(
     clickY: formData.get("clickY"),
     viewportW: formData.get("viewportW"),
     viewportH: formData.get("viewportH"),
+    selector: formData.get("selector"),
+    elementRect: formData.get("elementRect"),
   });
 
   if (!parsed.success) {

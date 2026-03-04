@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AuthSessionSync from "@/app/auth-session-sync";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Flowix MVP",
