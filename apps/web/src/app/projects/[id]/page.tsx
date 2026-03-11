@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase";
 import { IconsFilled, IconsLight, ModalCreateProject, Overlay, TableProjectRow } from "@/ui-kit";
 
@@ -17,6 +17,7 @@ type Project = {
 };
 
 export default function ProjectPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const projectId = params.id;
 
@@ -35,6 +36,14 @@ export default function ProjectPage() {
   const [blogPressed, setBlogPressed] = useState(false);
   const [feedbackHovered, setFeedbackHovered] = useState(false);
   const [feedbackPressed, setFeedbackPressed] = useState(false);
+  const [backHovered, setBackHovered] = useState(false);
+  const [backPressed, setBackPressed] = useState(false);
+  const [createHovered, setCreateHovered] = useState(false);
+  const [createPressed, setCreatePressed] = useState(false);
+  const [shareHovered, setShareHovered] = useState(false);
+  const [sharePressed, setSharePressed] = useState(false);
+  const [deleteHovered, setDeleteHovered] = useState(false);
+  const [deletePressed, setDeletePressed] = useState(false);
 
   const PRODUCT_BLOG_ICON_IMG =
     "https://www.figma.com/api/mcp/asset/e196d238-6d56-49e0-afc8-2f42c3dcbef0";
@@ -207,6 +216,18 @@ export default function ProjectPage() {
     return "border-[#dbdcdd] bg-transparent";
   };
 
+  const getHeaderNeutralButtonClasses = (hovered: boolean, pressed: boolean) => {
+    if (pressed) return "bg-[#cfd2d6]";
+    if (hovered) return "bg-[#e4e5e7]";
+    return "bg-[#eeeff0]";
+  };
+
+  const getHeaderTextButtonClasses = (hovered: boolean, pressed: boolean) => {
+    if (pressed) return "bg-[#dfe2e6]";
+    if (hovered) return "bg-[#eeeff0]";
+    return "bg-transparent";
+  };
+
   return (
     <main className="relative min-h-screen overflow-hidden rounded-[40px] bg-[#fafafa]">
       <div className="mx-auto flex min-h-screen w-full max-w-[1728px] flex-col items-center px-4 py-6 sm:px-6 sm:py-10">
@@ -215,8 +236,15 @@ export default function ProjectPage() {
             <div className="flex items-center gap-5">
               <button
                 type="button"
-                onClick={() => window.location.assign("/")}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#eeeff0] text-[#09090b]"
+                onClick={() => router.push("/")}
+                onMouseEnter={() => setBackHovered(true)}
+                onMouseLeave={() => {
+                  setBackHovered(false);
+                  setBackPressed(false);
+                }}
+                onMouseDown={() => setBackPressed(true)}
+                onMouseUp={() => setBackPressed(false)}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#09090b] ${getHeaderNeutralButtonClasses(backHovered, backPressed)}`}
                 aria-label="Back to projects"
               >
                 <IconsFilled icon="Back" className="h-[18px] w-[18px]" />
@@ -229,21 +257,42 @@ export default function ProjectPage() {
               <button
                 type="button"
                 onClick={() => setIsCreateFlowOpen(true)}
-                className="inline-flex h-[30px] w-8 items-center justify-center rounded-lg bg-transparent text-[#09090b] hover:bg-[#eeeff0]"
+                onMouseEnter={() => setCreateHovered(true)}
+                onMouseLeave={() => {
+                  setCreateHovered(false);
+                  setCreatePressed(false);
+                }}
+                onMouseDown={() => setCreatePressed(true)}
+                onMouseUp={() => setCreatePressed(false)}
+                className={`inline-flex h-[30px] w-8 items-center justify-center rounded-lg text-[#09090b] ${getHeaderTextButtonClasses(createHovered, createPressed)}`}
                 aria-label="Create flow"
               >
                 <IconsLight icon="edit" className="h-[18px] w-[18px]" />
               </button>
               <button
                 type="button"
-                className="inline-flex h-[30px] w-8 items-center justify-center rounded-lg bg-transparent text-[#09090b] hover:bg-[#eeeff0]"
+                onMouseEnter={() => setShareHovered(true)}
+                onMouseLeave={() => {
+                  setShareHovered(false);
+                  setSharePressed(false);
+                }}
+                onMouseDown={() => setSharePressed(true)}
+                onMouseUp={() => setSharePressed(false)}
+                className={`inline-flex h-[30px] w-8 items-center justify-center rounded-lg text-[#09090b] ${getHeaderTextButtonClasses(shareHovered, sharePressed)}`}
                 aria-label="Project action"
               >
                 <IconsLight icon="share" className="h-[18px] w-[18px]" />
               </button>
               <button
                 type="button"
-                className="inline-flex h-[30px] w-8 items-center justify-center rounded-lg bg-transparent text-[#e31a24] hover:bg-[#fff0f0]"
+                onMouseEnter={() => setDeleteHovered(true)}
+                onMouseLeave={() => {
+                  setDeleteHovered(false);
+                  setDeletePressed(false);
+                }}
+                onMouseDown={() => setDeletePressed(true)}
+                onMouseUp={() => setDeletePressed(false)}
+                className={`inline-flex h-[30px] w-8 items-center justify-center rounded-lg text-[#e31a24] ${getHeaderTextButtonClasses(deleteHovered, deletePressed)}`}
                 aria-label="Project action"
               >
                 <IconsLight icon="delete" className="h-[18px] w-[18px] text-[#e31a24]" />
@@ -274,6 +323,7 @@ export default function ProjectPage() {
                     key={flow.id}
                     state={openedFlowMenuId === flow.id ? "opened menu" : "default"}
                     projectName={flow.name}
+                    leadingIcon="docs"
                     createdAtLabel={formatCreatedLabel(flow.created_at)}
                     screensLabel={`${stepCountsByFlowId[flow.id] ?? 0} screens`}
                     onOpenProject={() => window.location.assign(`/flows/${flow.id}`)}

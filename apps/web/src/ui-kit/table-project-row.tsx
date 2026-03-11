@@ -1,6 +1,6 @@
 import { EllipsisVerticalIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { IconsLight } from "@/ui-kit/icons-light";
+import { IconsLight, type LightIconName } from "@/ui-kit/icons-light";
 
 export type TableProjectRowState = "default" | "hover" | "opened menu";
 
@@ -8,6 +8,7 @@ type TableProjectRowProps = {
   className?: string;
   state?: TableProjectRowState;
   projectName?: string;
+  leadingIcon?: LightIconName;
   createdAtLabel?: string;
   screensLabel?: string;
   onOpenProject?: () => void;
@@ -21,6 +22,7 @@ export function TableProjectRow({
   className,
   state = "default",
   projectName = "Project name",
+  leadingIcon = "folder",
   createdAtLabel = "Created 04.03.2026",
   screensLabel = "12 screens",
   onOpenProject,
@@ -49,7 +51,7 @@ export function TableProjectRow({
         onClick={onOpenProject}
         className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
       >
-        <IconsLight icon="folder" className="h-5 w-5 shrink-0 text-[#8a8d94]" />
+        <IconsLight icon={leadingIcon} className="h-5 w-5 shrink-0 text-[#8a8d94]" />
         <p className="truncate text-sm font-semibold leading-4 text-[#09090b]">
           {projectName}
         </p>

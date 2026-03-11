@@ -8,7 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOutIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CreditCardIcon, LogOutIcon, UserIcon } from "lucide-react";
 import {
   ButtonFigma,
   ModalDeleteProject,
@@ -27,6 +28,7 @@ type Project = {
 };
 
 export default function ProjectsDashboardPage() {
+  const router = useRouter();
   const PRODUCT_BLOG_ICON_IMG =
     "https://www.figma.com/api/mcp/asset/e196d238-6d56-49e0-afc8-2f42c3dcbef0";
   const FEEDBACK_ICON_IMG =
@@ -48,6 +50,8 @@ export default function ProjectsDashboardPage() {
   const [deletingProjectName, setDeletingProjectName] = useState("");
   const [deletingProject, setDeletingProject] = useState(false);
   const [showShareSnack, setShowShareSnack] = useState(false);
+  const [showRenameSnack, setShowRenameSnack] = useState(false);
+  const [showDeleteSnack, setShowDeleteSnack] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [userId, setUserId] = useState<string>("");
@@ -188,8 +192,9 @@ export default function ProjectsDashboardPage() {
         project.id === renamingProjectId ? { ...project, name: nextName } : project
       )
     );
-    setActionMessage("Project name updated");
     setIsRenameProjectOpen(false);
+    setShowRenameSnack(true);
+    window.setTimeout(() => setShowRenameSnack(false), 2000);
     setRenamingProjectId(null);
     setRenamingProjectName("");
     setRenaming(false);
@@ -242,7 +247,8 @@ export default function ProjectsDashboardPage() {
     setDeletingProjectId(null);
     setDeletingProjectName("");
     setDeletingProject(false);
-    setActionMessage("Project deleted");
+    setShowDeleteSnack(true);
+    window.setTimeout(() => setShowDeleteSnack(false), 2000);
   };
 
   const handleLogout = async () => {
@@ -307,9 +313,38 @@ export default function ProjectsDashboardPage() {
                     )}
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOutIcon className="h-4 w-4" />
+                <DropdownMenuContent align="end" className="w-[214px] p-1.5">
+                  <div className="flex items-center gap-2 rounded-md px-2 py-1.5 h-[60px]">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e3e3ff] text-sm font-normal text-[#4d4dff]">
+                      {userAvatarUrl ? (
+                        <img src={userAvatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
+                      ) : (
+                        avatarLabel
+                      )}
+                    </div>
+                    <div className="flex min-w-0 flex-col">
+                      <p className="truncate text-sm font-medium text-[#09090b]">
+                        {userEmail?.split("@")[0] ?? "User"}
+                      </p>
+                      <p className="truncate text-xs text-[#71717a]">{userEmail ?? ""}</p>
+                    </div>
+                  </div>
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-[#09090b] hover:bg-[#eeeff0]"
+                    onClick={() => router.push("/profile")}
+                  >
+                    <UserIcon className="h-4 w-4 shrink-0" />
+                    My profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-[#09090b] hover:bg-[#eeeff0]">
+                    <CreditCardIcon className="h-4 w-4 shrink-0" />
+                    Billing
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-[#09090b] hover:bg-[#eeeff0]"
+                    onClick={handleLogout}
+                  >
+                    <LogOutIcon className="h-4 w-4 shrink-0" />
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -460,7 +495,6 @@ export default function ProjectsDashboardPage() {
           <Overlay />
           <div className="absolute inset-0 flex items-center justify-center px-4">
             <ModalDeleteProject
-              projectName={deletingProjectName}
               deleting={deletingProject}
               onDelete={() => void handleDeleteProject()}
               onClose={() => {
@@ -480,6 +514,24 @@ export default function ProjectsDashboardPage() {
           type="success"
           message="Link copied"
           onClose={() => setShowShareSnack(false)}
+          className="absolute left-1/2 top-10 z-20 -translate-x-1/2"
+        />
+      ) : null}
+
+      {showRenameSnack ? (
+        <Snack
+          type="success"
+          message="Changes are saved!"
+          onClose={() => setShowRenameSnack(false)}
+          className="absolute left-1/2 top-10 z-20 -translate-x-1/2"
+        />
+      ) : null}
+
+      {showDeleteSnack ? (
+        <Snack
+          type="success"
+          message="Project deleted"
+          onClose={() => setShowDeleteSnack(false)}
           className="absolute left-1/2 top-10 z-20 -translate-x-1/2"
         />
       ) : null}

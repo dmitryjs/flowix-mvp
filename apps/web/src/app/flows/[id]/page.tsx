@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeftIcon, ExternalLinkIcon, Trash2Icon } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { PUBLIC_STORAGE_BUCKET } from "@/lib/env";
 import { FlowCard, IconsFilled, IconsLight, Overlay } from "@/ui-kit";
@@ -40,6 +39,12 @@ export default function FlowPage() {
   const [overlayEnabled, setOverlayEnabled] = useState(false);
   const [hoveredStepId, setHoveredStepId] = useState<string | null>(null);
   const [previewStepId, setPreviewStepId] = useState<string | null>(null);
+  const [backHovered, setBackHovered] = useState(false);
+  const [backPressed, setBackPressed] = useState(false);
+  const [shareHovered, setShareHovered] = useState(false);
+  const [sharePressed, setSharePressed] = useState(false);
+  const [deleteHovered, setDeleteHovered] = useState(false);
+  const [deletePressed, setDeletePressed] = useState(false);
 
   const loadSignedUrls = useCallback(
     async (stepsList: FlowStep[]) => {
@@ -162,6 +167,18 @@ export default function FlowPage() {
     setActionMessage("Step deleted");
   };
 
+  const getHeaderNeutralButtonClasses = (hovered: boolean, pressed: boolean) => {
+    if (pressed) return "bg-[#cfd2d6]";
+    if (hovered) return "bg-[#e4e5e7]";
+    return "bg-[#eeeff0]";
+  };
+
+  const getHeaderTextButtonClasses = (hovered: boolean, pressed: boolean) => {
+    if (pressed) return "bg-[#dfe2e6]";
+    if (hovered) return "bg-[#eeeff0]";
+    return "bg-transparent";
+  };
+
   return (
     <main className="relative min-h-screen overflow-hidden rounded-[40px] bg-[#fafafa] p-7">
       <section className="mx-auto flex h-[1061px] w-full max-w-[1026px] flex-col overflow-hidden rounded-xl border border-[#e4e4e7] bg-white">
@@ -173,10 +190,17 @@ export default function FlowPage() {
                 onClick={() =>
                   flow?.project_id ? router.push(`/projects/${flow.project_id}`) : router.back()
                 }
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#eeeff0] px-3 py-1.5"
+                onMouseEnter={() => setBackHovered(true)}
+                onMouseLeave={() => {
+                  setBackHovered(false);
+                  setBackPressed(false);
+                }}
+                onMouseDown={() => setBackPressed(true)}
+                onMouseUp={() => setBackPressed(false)}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-lg px-3 py-1.5 ${getHeaderNeutralButtonClasses(backHovered, backPressed)}`}
                 aria-label="Back"
               >
-                <ChevronLeftIcon className="h-[18px] w-[18px] text-[#09090b]" />
+                <IconsFilled icon="Back" className="h-[18px] w-[18px] text-[#09090b]" />
               </button>
               <h1 className="text-[20px] font-semibold leading-4 text-[#09090b]">
                 {flow?.name ?? "Flow name"}
@@ -208,18 +232,32 @@ export default function FlowPage() {
               <button
                 type="button"
                 onClick={() => void handleShareFlow()}
-                className="inline-flex h-[30px] w-8 items-center justify-center rounded-lg bg-transparent px-3 py-1.5"
+                onMouseEnter={() => setShareHovered(true)}
+                onMouseLeave={() => {
+                  setShareHovered(false);
+                  setSharePressed(false);
+                }}
+                onMouseDown={() => setSharePressed(true)}
+                onMouseUp={() => setSharePressed(false)}
+                className={`inline-flex h-[30px] w-8 items-center justify-center rounded-lg px-3 py-1.5 ${getHeaderTextButtonClasses(shareHovered, sharePressed)}`}
                 aria-label="Share flow"
               >
-                <ExternalLinkIcon className="h-[18px] w-[18px] text-[#09090b]" />
+                <IconsLight icon="share" className="h-[18px] w-[18px] text-[#09090b]" />
               </button>
               <button
                 type="button"
                 onClick={() => void handleDeleteFlow()}
-                className="inline-flex h-[30px] w-8 items-center justify-center rounded-lg bg-transparent px-3 py-1.5"
+                onMouseEnter={() => setDeleteHovered(true)}
+                onMouseLeave={() => {
+                  setDeleteHovered(false);
+                  setDeletePressed(false);
+                }}
+                onMouseDown={() => setDeletePressed(true)}
+                onMouseUp={() => setDeletePressed(false)}
+                className={`inline-flex h-[30px] w-8 items-center justify-center rounded-lg px-3 py-1.5 ${getHeaderTextButtonClasses(deleteHovered, deletePressed)}`}
                 aria-label="Delete flow"
               >
-                <Trash2Icon className="h-[18px] w-[18px] text-[#e31a24]" />
+                <IconsLight icon="delete" className="h-[18px] w-[18px] text-[#e31a24]" />
               </button>
             </div>
           </div>

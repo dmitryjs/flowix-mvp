@@ -1,4 +1,4 @@
-const WEB_APP_URL = "http://localhost:3000";
+const WEB_APP_URL = "https://www.flowrecorder.pro";
 const DEFAULT_CAPTURE_SHORTCUT = "Alt+Shift+C";
 
 type CaptureResult = { ok: true } | { ok: false; error: string };

@@ -1,6 +1,7 @@
 import * as React from "react";
-import { CopyIcon, ExpandIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { ClickArea } from "@/ui-kit/click-area";
+import { IconsFilled } from "@/ui-kit/icons-filled";
+import { IconsLight } from "@/ui-kit/icons-light";
 import { cn } from "@/lib/utils";
 
 export type FlowCardState = "default" | "hover" | "overlay";
@@ -13,7 +14,6 @@ type FlowCardProps = {
   imageSrc: string;
   imageAlt?: string;
   clickPoint?: { x: number; y: number } | null;
-  fullScreenLabel?: string;
   onEdit?: () => void;
   onDelete?: () => void;
   onCopy?: () => void;
@@ -28,42 +28,55 @@ export function FlowCard({
   imageSrc,
   imageAlt = "Flow step screenshot",
   clickPoint = null,
-  fullScreenLabel = "Full screen",
   onEdit,
   onDelete,
   onCopy,
   onFullScreen,
 }: FlowCardProps) {
-  const showOverlay = state === "overlay" || state === "hover";
-  const showHoverActions = state === "hover";
+  const isOverlay = state === "overlay";
+  const isHover = state === "hover";
 
   return (
     <article
-      className={cn(
-        "flex w-full flex-col gap-2.5 rounded-2xl bg-[#eeeff0] px-3 py-4",
-        className
-      )}
+      className={cn("flex w-full flex-col gap-2.5 rounded-2xl bg-[#eeeff0] px-3 py-4", className)}
+      data-name="Flow card"
+      data-node-id={isOverlay ? "91:3855" : isHover ? "91:3870" : "91:3840"}
     >
-      <header className="flex items-center justify-between px-1">
+      <header
+        className={cn(
+          "flex items-center justify-between",
+          !isHover && "px-1"
+        )}
+      >
         <div className="flex items-center gap-2">
           <h3 className="text-base font-semibold leading-4 text-[#09090b]">{title}</h3>
           <button
             type="button"
             aria-label="Edit flow step"
             onClick={onEdit}
-            className="inline-flex h-6 w-6 items-center justify-center rounded-md text-[#09090b] hover:bg-[#dfe2e6]"
+            className="inline-flex h-6 w-6 items-center justify-center rounded-lg text-[#09090b] hover:bg-[#dfe2e6]"
           >
-            <PencilIcon className="h-4 w-4" />
+            <IconsFilled icon="edit" className="h-[18px] w-[18px]" />
           </button>
         </div>
-        <button
-          type="button"
-          aria-label="Delete flow step"
-          onClick={onDelete}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#09090b] hover:bg-[#dfe2e6]"
-        >
-          <Trash2Icon className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-0.5">
+          <button
+            type="button"
+            aria-label="Full screen"
+            onClick={onFullScreen}
+            className="inline-flex h-[30px] w-8 items-center justify-center rounded-lg text-[#09090b] hover:bg-[#dfe2e6]"
+          >
+            <IconsFilled icon="Expand" className="h-[18px] w-[18px]" />
+          </button>
+          <button
+            type="button"
+            aria-label="Delete flow step"
+            onClick={onDelete}
+            className="inline-flex h-[30px] w-8 items-center justify-center rounded-lg text-[#09090b] hover:bg-[#dfe2e6]"
+          >
+            <IconsLight icon="delete" className="h-[18px] w-[18px]" />
+          </button>
+        </div>
       </header>
 
       <div className="relative h-[471px] w-full overflow-hidden rounded-xl border border-[#dbdcdd]">
@@ -75,19 +88,11 @@ export function FlowCard({
           </div>
         )}
 
-        {showOverlay && <div className="absolute inset-0 bg-black/40" />}
-        {clickPoint ? <ClickArea x={clickPoint.x} y={clickPoint.y} /> : null}
-
-        {showHoverActions && (
-          <button
-            type="button"
-            onClick={onFullScreen}
-            className="absolute left-1/2 top-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-lg bg-[#eeeff0] pl-2 pr-3 py-1.5 text-xs font-medium text-[#09090b]"
-          >
-            <ExpandIcon className="h-[18px] w-[18px]" />
-            {fullScreenLabel}
-          </button>
+        {isOverlay && (
+          <div className="absolute inset-0 rounded-xl bg-[rgba(0,0,0,0.3)]" />
         )}
+
+        {clickPoint ? <ClickArea x={clickPoint.x} y={clickPoint.y} /> : null}
       </div>
 
       <footer className="flex items-center gap-3">
@@ -95,19 +100,19 @@ export function FlowCard({
         <div className="flex items-center gap-1">
           <button
             type="button"
-            aria-label="Copy flow link"
+            aria-label="Copy URL"
             onClick={onCopy}
-            className="inline-flex h-6 w-6 items-center justify-center rounded-md text-[#09090b] hover:bg-[#dfe2e6]"
+            className="inline-flex h-6 w-6 items-center justify-center rounded-lg text-[#09090b] hover:bg-[#dfe2e6]"
           >
-            <CopyIcon className="h-4 w-4" />
+            <IconsFilled icon="copy" className="h-[18px] w-[18px]" />
           </button>
           <button
             type="button"
-            aria-label="Edit flow link"
+            aria-label="Edit URL"
             onClick={onEdit}
-            className="inline-flex h-6 w-6 items-center justify-center rounded-md text-[#09090b] hover:bg-[#dfe2e6]"
+            className="inline-flex h-6 w-6 items-center justify-center rounded-lg text-[#09090b] hover:bg-[#dfe2e6]"
           >
-            <PencilIcon className="h-4 w-4" />
+            <IconsFilled icon="edit" className="h-[18px] w-[18px]" />
           </button>
         </div>
       </footer>
