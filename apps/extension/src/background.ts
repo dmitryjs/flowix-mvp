@@ -1,4 +1,5 @@
 const WEB_APP_URL = "http://localhost:3000";
+const DEFAULT_CAPTURE_SHORTCUT = "Alt+Shift+C";
 
 type CaptureResult = { ok: true } | { ok: false; error: string };
 type ElementRect = {
@@ -13,6 +14,14 @@ type AutoCapturePayload = {
   url?: string;
   selector?: string;
   elementRect?: ElementRect;
+};
+type AutoCaptureHotkeyPayload = {
+  key?: string;
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  shiftKey?: boolean;
+  metaKey?: boolean;
+  targetTag?: string;
 };
 const AUTO_CAPTURE_THROTTLE_MS = 600;
 let lastAutoCaptureAt = 0;
@@ -77,6 +86,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     void handleAutoCaptureClick(message.payload as AutoCapturePayload);
     return;
   }
+
+  if (message?.type === "autoCaptureHotkey") {
+    void handleAutoCaptureHotkey(message.payload as AutoCaptureHotkeyPayload);
+    return;
+  }
 });
 
 async function handleAutoCaptureClick(payload: AutoCapturePayload) {
@@ -90,6 +104,60 @@ async function handleAutoCaptureClick(payload: AutoCapturePayload) {
   }
   lastAutoCaptureAt = now;
   await captureStep(payload);
+}
+
+function normalizeShortcutKey(key: string): string {
+  const value = key.trim();
+  if (!value) return "";
+  if (value === " ") return "Space";
+  if (value.length === 1) return value.toUpperCase();
+  const map: Record<string, string> = {
+    Escape: "Esc",
+    ArrowUp: "Up",
+    ArrowDown: "Down",
+    ArrowLeft: "Left",
+    ArrowRight: "Right",
+  };
+  return map[value] ?? value;
+}
+
+function shortcutFromPayload(payload: AutoCaptureHotkeyPayload): string | null {
+  const key = normalizeShortcutKey(typeof payload.key === "string" ? payload.key : "");
+  if (!key || ["Control", "Alt", "Shift", "Meta"].includes(key)) return null;
+  const parts: string[] = [];
+  if (payload.ctrlKey) parts.push("Ctrl");
+  if (payload.altKey) parts.push("Alt");
+  if (payload.shiftKey) parts.push("Shift");
+  if (payload.metaKey) parts.push("Meta");
+  parts.push(key);
+  return parts.join("+");
+}
+
+function isEditableTarget(targetTag?: string): boolean {
+  if (!targetTag) return false;
+  const value = targetTag.toLowerCase();
+  return value === "input" || value === "textarea" || value === "select";
+}
+
+async function handleAutoCaptureHotkey(payload: AutoCaptureHotkeyPayload) {
+  const state = await chrome.storage.local.get(["recording", "captureShortcut"]);
+  if (state.recording !== true) return;
+  if (isEditableTarget(payload.targetTag)) return;
+
+  const pressedShortcut = shortcutFromPayload(payload);
+  if (!pressedShortcut) return;
+
+  const configuredShortcut =
+    typeof state.captureShortcut === "string" && state.captureShortcut.trim()
+      ? state.captureShortcut.trim()
+      : DEFAULT_CAPTURE_SHORTCUT;
+
+  if (pressedShortcut !== configuredShortcut) return;
+
+  const now = Date.now();
+  if (now - lastAutoCaptureAt < AUTO_CAPTURE_THROTTLE_MS) return;
+  lastAutoCaptureAt = now;
+  await captureStep();
 }
 
 chrome.tabs.onActivated.addListener(async () => {
@@ -225,6 +293,7 @@ async function ensureTrackerOnActiveTab() {
       const windowWithTracker = window as Window & {
         __flowixTrackerInstalled?: boolean;
         __flowixClickHandler?: (event: PointerEvent) => void;
+        __flowixKeyHandler?: (event: KeyboardEvent) => void;
       };
       if (windowWithTracker.__flowixTrackerInstalled) return;
 
@@ -288,8 +357,26 @@ async function ensureTrackerOnActiveTab() {
         });
       };
 
+      const keyHandler = (event: KeyboardEvent) => {
+        if (event.repeat) return;
+        const target = event.target as HTMLElement | null;
+        chrome.runtime.sendMessage({
+          type: "autoCaptureHotkey",
+          payload: {
+            key: event.key,
+            ctrlKey: event.ctrlKey,
+            altKey: event.altKey,
+            shiftKey: event.shiftKey,
+            metaKey: event.metaKey,
+            targetTag: target?.tagName?.toLowerCase()
+          }
+        });
+      };
+
       window.addEventListener("pointerdown", handler, true);
+      window.addEventListener("keydown", keyHandler, true);
       windowWithTracker.__flowixClickHandler = handler;
+      windowWithTracker.__flowixKeyHandler = keyHandler;
       windowWithTracker.__flowixTrackerInstalled = true;
     }
   });
@@ -305,13 +392,19 @@ async function removeTrackerFromActiveTab() {
       const windowWithTracker = window as Window & {
         __flowixTrackerInstalled?: boolean;
         __flowixClickHandler?: (event: PointerEvent) => void;
+        __flowixKeyHandler?: (event: KeyboardEvent) => void;
       };
       if (!windowWithTracker.__flowixTrackerInstalled) return;
       const handler = windowWithTracker.__flowixClickHandler;
       if (handler) {
         window.removeEventListener("pointerdown", handler, true);
       }
+      const keyHandler = windowWithTracker.__flowixKeyHandler;
+      if (keyHandler) {
+        window.removeEventListener("keydown", keyHandler, true);
+      }
       windowWithTracker.__flowixClickHandler = undefined;
+      windowWithTracker.__flowixKeyHandler = undefined;
       windowWithTracker.__flowixTrackerInstalled = false;
     }
   });

@@ -35,3 +35,6 @@ Flow линейный: шаг `N -> N+1`.
 
 ## D11. Extension token endpoint
 Для extension добавлен endpoint `GET /api/auth/token`, который отдает access token текущей cookie-based сессии.
+
+## D12. Figma UI kit import fallback
+При временной недоступности Figma MCP tools для выбранного node используется безопасный fallback: добавляются базовые UI-kit компоненты в `apps/web/src/ui-kit` без подключения к экранам. После восстановления get_design_context компоненты уточняются под точные параметры Figma.

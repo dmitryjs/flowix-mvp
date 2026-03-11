@@ -2,14 +2,16 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { ChevronLeftIcon, ExternalLinkIcon, Trash2Icon } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { PUBLIC_STORAGE_BUCKET } from "@/lib/env";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FlowCard, IconsFilled, IconsLight, Overlay } from "@/ui-kit";
 
 type Flow = {
   id: string;
   name: string;
+  project_id: string;
 };
 
 type FlowStep = {
@@ -24,6 +26,7 @@ type FlowStep = {
 };
 
 export default function FlowPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const flowId = params.id;
   const storageBucket = PUBLIC_STORAGE_BUCKET;
@@ -33,6 +36,10 @@ export default function FlowPage() {
   const [steps, setSteps] = useState<FlowStep[]>([]);
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [overlayEnabled, setOverlayEnabled] = useState(false);
+  const [hoveredStepId, setHoveredStepId] = useState<string | null>(null);
+  const [previewStepId, setPreviewStepId] = useState<string | null>(null);
 
   const loadSignedUrls = useCallback(
     async (stepsList: FlowStep[]) => {
@@ -84,7 +91,7 @@ export default function FlowPage() {
 
       const { data, error: flowError } = await supabase
         .from("flows")
-        .select("id, name")
+        .select("id, name, project_id")
         .eq("id", flowId)
         .eq("owner_id", user.id)
         .maybeSingle();
@@ -118,81 +125,216 @@ export default function FlowPage() {
     void loadFlow();
   }, [flowId, loadSignedUrls]);
 
+  const handleShareFlow = async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    setActionMessage("Flow link copied");
+  };
+
+  const handleDeleteFlow = async () => {
+    const supabase = getSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user || !flow) return;
+
+    const { error: deleteError } = await supabase
+      .from("flows")
+      .delete()
+      .eq("id", flow.id)
+      .eq("owner_id", user.id);
+
+    if (deleteError) {
+      setError(deleteError.message);
+      return;
+    }
+
+    router.push(flow.project_id ? `/projects/${flow.project_id}` : "/");
+  };
+
+  const handleDeleteStep = async (stepId: string) => {
+    const supabase = getSupabaseClient();
+    const { error: deleteError } = await supabase.from("flow_steps").delete().eq("id", stepId);
+    if (deleteError) {
+      setError(deleteError.message);
+      return;
+    }
+    setSteps((prev) => prev.filter((step) => step.id !== stepId));
+    setActionMessage("Step deleted");
+  };
+
   return (
-    <main className="mx-auto max-w-5xl space-y-4 p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{flow ? flow.name : "Flow"}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {error ? <p className="text-sm text-red-500">{error}</p> : null}
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Loading flow...</p>
+    <main className="relative min-h-screen overflow-hidden rounded-[40px] bg-[#fafafa] p-7">
+      <section className="mx-auto flex h-[1061px] w-full max-w-[1026px] flex-col overflow-hidden rounded-xl border border-[#e4e4e7] bg-white">
+        <header className="h-16 border-b border-[#dbdcdd] px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-5">
+              <button
+                type="button"
+                onClick={() =>
+                  flow?.project_id ? router.push(`/projects/${flow.project_id}`) : router.back()
+                }
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#eeeff0] px-3 py-1.5"
+                aria-label="Back"
+              >
+                <ChevronLeftIcon className="h-[18px] w-[18px] text-[#09090b]" />
+              </button>
+              <h1 className="text-[20px] font-semibold leading-4 text-[#09090b]">
+                {flow?.name ?? "Flow name"}
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setOverlayEnabled((prev) => !prev)}
+                className={`inline-flex h-8 items-center gap-1 rounded-lg pl-2 pr-3 py-1.5 text-[12px] font-medium leading-5 ${
+                  overlayEnabled
+                    ? "w-[111px] bg-[#2d4ffa] text-white"
+                    : "w-[116px] bg-[#eeeff0] text-[#09090b]"
+                }`}
+              >
+                <span
+                  className={`relative inline-flex h-3 w-[18px] rounded-full ${
+                    overlayEnabled ? "bg-[#8f9df4]" : "bg-[#8f9298]"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-white ${
+                      overlayEnabled ? "right-1" : "left-1"
+                    }`}
+                  />
+                </span>
+                {overlayEnabled ? "Overlay: ON" : "Overlay: OFF"}
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleShareFlow()}
+                className="inline-flex h-[30px] w-8 items-center justify-center rounded-lg bg-transparent px-3 py-1.5"
+                aria-label="Share flow"
+              >
+                <ExternalLinkIcon className="h-[18px] w-[18px] text-[#09090b]" />
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDeleteFlow()}
+                className="inline-flex h-[30px] w-8 items-center justify-center rounded-lg bg-transparent px-3 py-1.5"
+                aria-label="Delete flow"
+              >
+                <Trash2Icon className="h-[18px] w-[18px] text-[#e31a24]" />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          {loading ? <p className="text-sm text-[#71717a]">Loading flow...</p> : null}
+          {!loading && !flow ? <p className="text-sm text-[#71717a]">Flow not found</p> : null}
+          {!loading && flow && steps.length === 0 ? (
+            <p className="text-sm text-[#71717a]">No steps yet</p>
           ) : null}
-          {!loading && !flow ? <p className="text-sm">Flow not found</p> : null}
-        </CardContent>
-      </Card>
 
-      {!loading && flow ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Steps</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {steps.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No steps yet</p>
-            ) : null}
-            {steps.map((step) => {
-              const imageUrl = signedUrls[step.id];
-              const hasClickPoint =
-                typeof step.click_x === "number" &&
-                typeof step.click_y === "number" &&
-                typeof step.viewport_w === "number" &&
-                typeof step.viewport_h === "number" &&
-                step.viewport_w > 0 &&
-                step.viewport_h > 0;
-              const clickLeft = hasClickPoint
-                ? `${(step.click_x! / step.viewport_w!) * 100}%`
-                : "0%";
-              const clickTop = hasClickPoint
-                ? `${(step.click_y! / step.viewport_h!) * 100}%`
-                : "0%";
+          {!loading && flow ? (
+            <div className="flex flex-col items-center gap-4">
+              {steps.map((step, index) => {
+                const imageUrl = signedUrls[step.id];
+                const hasClickPoint =
+                  typeof step.click_x === "number" &&
+                  typeof step.click_y === "number" &&
+                  typeof step.viewport_w === "number" &&
+                  typeof step.viewport_h === "number" &&
+                  step.viewport_w > 0 &&
+                  step.viewport_h > 0;
+                const clickPoint = hasClickPoint
+                  ? {
+                      x: (step.click_x! / step.viewport_w!) * 100,
+                      y: (step.click_y! / step.viewport_h!) * 100,
+                    }
+                  : null;
 
-              return (
-                <div key={step.id} className="rounded-md border p-3">
-                  <p className="mb-2 text-sm font-medium">
-                    Step {step.step_index + 1}
-                  </p>
-                  {imageUrl ? (
-                    <div className="relative overflow-hidden rounded-md border">
-                      <Image
-                        src={imageUrl}
-                        alt={`Step ${step.step_index + 1}`}
-                        width={1280}
-                        height={720}
-                        unoptimized
-                        className="h-auto w-full"
+                return (
+                  <div key={step.id} className="flex w-full max-w-[994px] flex-col items-center gap-4">
+                    <div
+                      onMouseEnter={() => setHoveredStepId(step.id)}
+                      onMouseLeave={() => setHoveredStepId((prev) => (prev === step.id ? null : prev))}
+                      className="w-full"
+                    >
+                      <FlowCard
+                        title={`Step ${step.step_index + 1}`}
+                        url={step.url ?? "No URL"}
+                        imageSrc={imageUrl || ""}
+                        imageAlt={`Step ${step.step_index + 1}`}
+                        state={
+                          hoveredStepId === step.id
+                            ? "hover"
+                            : overlayEnabled
+                            ? "overlay"
+                            : "default"
+                        }
+                        clickPoint={clickPoint}
+                        onDelete={() => void handleDeleteStep(step.id)}
+                        onCopy={async () => {
+                          await navigator.clipboard.writeText(step.url ?? "");
+                          setActionMessage("Step URL copied");
+                        }}
+                        onEdit={() => setActionMessage("Edit step is not implemented yet")}
+                        onFullScreen={() => setPreviewStepId(step.id)}
                       />
-                      {hasClickPoint ? (
-                        <span
-                          className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white bg-red-500 shadow"
-                          style={{ left: clickLeft, top: clickTop }}
-                        />
-                      ) : null}
                     </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Screenshot unavailable
-                    </p>
-                  )}
-                  <p className="mt-2 break-all text-xs text-muted-foreground">
-                    {step.url ?? "No URL"}
-                  </p>
+                    {index < steps.length - 1 ? (
+                      <div className="relative h-[46px] w-2">
+                        <div className="absolute left-0 top-0 h-2 w-2 rounded-full border-2 border-[#2d4ffa] bg-white" />
+                        <div className="absolute left-1/2 top-[8px] h-[38px] w-px -translate-x-1/2 bg-[#2d4ffa]" />
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      {previewStepId ? (
+        <>
+          <Overlay className="fixed inset-0 z-40 rounded-none" />
+          <div className="fixed inset-[40px] z-50 flex flex-col">
+            <div className="mb-3 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setPreviewStepId(null)}
+                className="inline-flex h-[30px] w-8 items-center justify-center rounded-lg bg-[#eeeff0]"
+                aria-label="Close preview"
+              >
+                <IconsFilled icon="Close" className="h-[18px] w-[18px]" />
+              </button>
+            </div>
+            <div className="relative flex-1 overflow-hidden rounded-xl border border-[#dbdcdd] bg-white">
+              {signedUrls[previewStepId] ? (
+                <Image
+                  src={signedUrls[previewStepId]}
+                  alt="Screen preview"
+                  fill
+                  unoptimized
+                  className="object-contain"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-[#71717a]">
+                  Screenshot unavailable
                 </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+              )}
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {error ? (
+        <div className="absolute left-1/2 top-10 -translate-x-1/2 rounded-lg border border-[#f0c3c6] bg-[#fff4f5] px-4 py-2 text-sm text-[#e31a24]">
+          {error}
+        </div>
+      ) : null}
+      {actionMessage ? (
+        <div className="absolute left-1/2 top-10 -translate-x-1/2 rounded-lg border border-[#d7e5d4] bg-[#f2fff0] px-4 py-2 text-sm text-[#2f7d33]">
+          {actionMessage}
+        </div>
       ) : null}
     </main>
   );

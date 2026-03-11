@@ -23,6 +23,10 @@ export default defineConfig({
       closeBundle() {
         copyFileSync(resolve(__dirname, "manifest.json"), resolve(__dirname, "dist/manifest.json"));
         copyFileSync(resolve(__dirname, "dist/src/popup.html"), resolve(__dirname, "dist/popup.html"));
+        copyFileSync(
+          resolve(__dirname, "../web/src/ui-kit/fav.png"),
+          resolve(__dirname, "dist/fav.png")
+        );
       }
     }
   ]

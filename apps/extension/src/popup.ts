@@ -1,6 +1,8 @@
 import "./styles.css";
+import flowixLogo from "../../web/src/ui-kit/logo.png";
 
 const WEB_APP_URL = "http://localhost:3000";
+const DEFAULT_CAPTURE_SHORTCUT = "Alt+Shift+C";
 
 type Project = {
   id: string;
@@ -8,28 +10,23 @@ type Project = {
 };
 
 const statusRecordingEl = document.getElementById("statusRecording");
-const statusProjectEl = document.getElementById("statusProject");
 const statusTokenEl = document.getElementById("statusToken");
 const statusFlowEl = document.getElementById("statusFlow");
-const statusStepEl = document.getElementById("statusStep");
 const messageEl = document.getElementById("message");
 const projectSelectEl = document.getElementById("projectSelect") as HTMLSelectElement | null;
 const syncBtn = document.getElementById("syncBtn");
 const startBtn = document.getElementById("startBtn");
 const stopBtn = document.getElementById("stopBtn");
-const captureBtn = document.getElementById("captureBtn");
+const captureShortcutBtn = document.getElementById("captureShortcutBtn");
+const flowActionsEl = document.getElementById("flowActions");
 const openFlowBtn = document.getElementById("openFlowBtn");
 const copyFlowBtn = document.getElementById("copyFlowBtn");
-const flowLinkEl = document.getElementById("flowLink");
+const logoImgEl = document.getElementById("logoImg") as HTMLImageElement | null;
+let waitingForShortcut = false;
 
 function setRecordingStatus(recording: boolean) {
   if (!statusRecordingEl) return;
   statusRecordingEl.textContent = `Recording: ${recording ? "ON" : "OFF"}`;
-}
-
-function setProjectStatus(projectId: string) {
-  if (!statusProjectEl) return;
-  statusProjectEl.textContent = `Project: ${projectId ? "selected" : "not selected"}`;
 }
 
 function setTokenStatus(accessToken: string) {
@@ -40,9 +37,6 @@ function setTokenStatus(accessToken: string) {
 function setFlowStatus(flowId: string | null) {
   if (!statusFlowEl) return;
   statusFlowEl.textContent = `Current flow: ${flowId ?? "none"}`;
-  if (flowLinkEl) {
-    flowLinkEl.textContent = flowId ? `${WEB_APP_URL}/flows/${flowId}` : "none";
-  }
   if (openFlowBtn instanceof HTMLButtonElement) {
     openFlowBtn.disabled = !flowId;
   }
@@ -51,14 +45,56 @@ function setFlowStatus(flowId: string | null) {
   }
 }
 
-function setStepStatus(stepIndex: number) {
-  if (!statusStepEl) return;
-  statusStepEl.textContent = `Next step index: ${stepIndex}`;
+function setFlowActionsVisibility(recording: boolean, flowId: string | null) {
+  if (!flowActionsEl) return;
+  const shouldShow = !recording && Boolean(flowId);
+  flowActionsEl.hidden = !shouldShow;
 }
 
 function setMessage(message: string) {
   if (!messageEl) return;
   messageEl.textContent = message;
+}
+
+function normalizeShortcutKey(key: string): string {
+  const value = key.trim();
+  if (!value) return "";
+  if (value === " ") return "Space";
+  if (value.length === 1) return value.toUpperCase();
+  const map: Record<string, string> = {
+    Escape: "Esc",
+    ArrowUp: "Up",
+    ArrowDown: "Down",
+    ArrowLeft: "Left",
+    ArrowRight: "Right",
+  };
+  return map[value] ?? value;
+}
+
+function shortcutFromKeyboardEvent(event: KeyboardEvent): string | null {
+  const key = normalizeShortcutKey(event.key);
+  if (!key || ["Control", "Alt", "Shift", "Meta"].includes(key)) return null;
+  const parts: string[] = [];
+  if (event.ctrlKey) parts.push("Ctrl");
+  if (event.altKey) parts.push("Alt");
+  if (event.shiftKey) parts.push("Shift");
+  if (event.metaKey) parts.push("Meta");
+  parts.push(key);
+  return parts.join("+");
+}
+
+async function getCaptureShortcut(): Promise<string> {
+  const state = await chrome.storage.local.get(["captureShortcut"]);
+  if (typeof state.captureShortcut === "string" && state.captureShortcut.trim()) {
+    return state.captureShortcut.trim();
+  }
+  await chrome.storage.local.set({ captureShortcut: DEFAULT_CAPTURE_SHORTCUT });
+  return DEFAULT_CAPTURE_SHORTCUT;
+}
+
+function setCaptureShortcutLabel(shortcut: string) {
+  if (!(captureShortcutBtn instanceof HTMLButtonElement)) return;
+  captureShortcutBtn.textContent = shortcut;
 }
 
 function parseAccessTokenFromStorage(): string | null {
@@ -192,7 +228,6 @@ async function syncSessionAndProjects() {
     await renderProjects([]);
     await chrome.storage.local.set({ accessToken: "", projectId: "" });
     setTokenStatus("");
-    setProjectStatus("");
     setMessage(
       error instanceof Error ? error.message : "Failed to sync session"
     );
@@ -205,19 +240,17 @@ async function refreshStatus() {
     "projectId",
     "accessToken",
     "currentFlowId",
-    "stepIndex"
+    "showFlowActions"
   ]);
   const recording = Boolean(result.recording);
-  const projectId = typeof result.projectId === "string" ? result.projectId : "";
   const accessToken = typeof result.accessToken === "string" ? result.accessToken : "";
   const currentFlowId = typeof result.currentFlowId === "string" ? result.currentFlowId : null;
-  const stepIndex = typeof result.stepIndex === "number" ? result.stepIndex : 0;
+  const showFlowActions = result.showFlowActions === true;
 
   setRecordingStatus(recording);
-  setProjectStatus(projectId.trim());
   setTokenStatus(accessToken.trim());
   setFlowStatus(currentFlowId);
-  setStepStatus(stepIndex);
+  setFlowActionsVisibility(recording || !showFlowActions, currentFlowId);
   if (projectSelectEl && typeof result.projectId === "string") {
     projectSelectEl.value = result.projectId;
   }
@@ -259,57 +292,30 @@ startBtn?.addEventListener("click", async () => {
     accessToken,
     recording: true,
     currentFlowId: null,
-    stepIndex: nextStepIndex
+    stepIndex: nextStepIndex,
+    showFlowActions: false
   });
   await chrome.runtime.sendMessage({ type: "startAutoCapture" });
   setRecordingStatus(true);
-  setProjectStatus(projectId);
   setTokenStatus(accessToken);
-  setStepStatus(nextStepIndex);
+  setFlowStatus(null);
+  setFlowActionsVisibility(true, null);
   setMessage("");
 });
 
 stopBtn?.addEventListener("click", async () => {
-  await chrome.storage.local.set({ recording: false });
+  const state = await chrome.storage.local.get(["currentFlowId"]);
+  const hasFlow = typeof state.currentFlowId === "string" && state.currentFlowId.trim().length > 0;
+  await chrome.storage.local.set({ recording: false, showFlowActions: hasFlow });
   await chrome.runtime.sendMessage({ type: "stopAutoCapture" });
   setRecordingStatus(false);
   setMessage("");
   await refreshStatus();
 });
 
-captureBtn?.addEventListener("click", async () => {
-  const state = await chrome.storage.local.get(["recording", "accessToken"]);
-  if (state.recording !== true) {
-    setMessage("Start recording first");
-    return;
-  }
-  if (typeof state.accessToken !== "string" || !state.accessToken.trim()) {
-    setMessage("Login in web app and click Sync");
-    return;
-  }
-
-  const response = (await chrome.runtime.sendMessage({
-    type: "captureStep"
-  })) as { ok: boolean; error?: string } | undefined;
-
-  if (!response) {
-    setMessage("Capture failed");
-    return;
-  }
-
-  if (!response.ok) {
-    setMessage(response.error ?? "Capture failed");
-    return;
-  }
-
-  setMessage("Captured");
-  await refreshStatus();
-});
-
 projectSelectEl?.addEventListener("change", async () => {
   const value = projectSelectEl.value.trim();
   await chrome.storage.local.set({ projectId: value });
-  setProjectStatus(value);
 });
 
 openFlowBtn?.addEventListener("click", async () => {
@@ -335,7 +341,46 @@ copyFlowBtn?.addEventListener("click", async () => {
   setMessage("Flow link copied");
 });
 
+captureShortcutBtn?.addEventListener("click", () => {
+  waitingForShortcut = true;
+  setCaptureShortcutLabel("Press keys...");
+  setMessage("Press desired key combination");
+});
+
+document.addEventListener("keydown", async (event) => {
+  if (!waitingForShortcut) return;
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (event.key === "Escape") {
+    waitingForShortcut = false;
+    setCaptureShortcutLabel(await getCaptureShortcut());
+    setMessage("Shortcut setup cancelled");
+    return;
+  }
+
+  const shortcut = shortcutFromKeyboardEvent(event);
+  if (!shortcut) {
+    setMessage("Use at least one non-modifier key");
+    return;
+  }
+
+  waitingForShortcut = false;
+  await chrome.storage.local.set({ captureShortcut: shortcut });
+  setCaptureShortcutLabel(shortcut);
+  setMessage("Shortcut updated");
+});
+
 void (async () => {
+  if (logoImgEl) {
+    logoImgEl.src = flowixLogo;
+  }
+  const settings = await chrome.storage.local.get(["showFlowActions"]);
+  if (typeof settings.showFlowActions !== "boolean") {
+    await chrome.storage.local.set({ showFlowActions: false });
+  }
+  const shortcut = await getCaptureShortcut();
+  setCaptureShortcutLabel(shortcut);
   await syncSessionAndProjects();
   await refreshStatus();
 })();

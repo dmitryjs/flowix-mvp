@@ -8,16 +8,13 @@
   <body>
     <main class="popup">
       <header class="header">
-        <h1>Flowix Recorder</h1>
-        <p class="hint">Start recording and capture clicks automatically.</p>
+        <img id="logoImg" class="flowix-logo" alt="Flowix logo" />
       </header>
 
       <section class="card" id="statusPanel">
         <p id="statusRecording">Recording: OFF</p>
-        <p id="statusProject">Project: not selected</p>
         <p id="statusToken">Session: missing</p>
         <p id="statusFlow">Current flow: none</p>
-        <p id="statusStep">Next step index: 0</p>
       </section>
 
       <section class="card">
@@ -30,18 +27,17 @@
         <button id="syncBtn" type="button" class="secondary">Sync</button>
         <button id="startBtn" type="button" class="primary">Start</button>
         <button id="stopBtn" type="button" class="secondary">Stop</button>
-        <button id="captureBtn" type="button" class="secondary">Capture now</button>
       </section>
 
-      <section class="actions">
+      <section class="shortcut-row">
+        <p class="shortcut-label">Capture now</p>
+        <button id="captureShortcutBtn" type="button" class="secondary shortcut-btn">Alt+Shift+C</button>
+      </section>
+
+      <section class="actions" id="flowActions" hidden>
         <button id="openFlowBtn" type="button" class="secondary">Open flow</button>
         <button id="copyFlowBtn" type="button" class="secondary">Copy link</button>
       </section>
-
-      <div class="card">
-        <p id="flowLinkLabel" class="hint">Flow link</p>
-        <p id="flowLink" class="flow-link">none</p>
-      </div>
 
       <p id="message" class="message"></p>
     </main>

@@ -12,14 +12,16 @@ body {
   gap: 10px;
 }
 
-h1 {
-  margin: 0;
-  font-size: 17px;
-  line-height: 1.2;
+.header {
+  display: flex;
+  align-items: center;
 }
 
-.header .hint {
-  margin: 4px 0 0;
+.flowix-logo {
+  width: 71px;
+  height: 14px;
+  object-fit: contain;
+  display: block;
 }
 
 .card {
@@ -37,6 +39,25 @@ h1 {
 
 #statusPanel p:last-child {
   margin-bottom: 0;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0;
+}
+
+.shortcut-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shortcut-btn {
+  min-width: 118px;
+  text-align: center;
 }
 
 .actions {

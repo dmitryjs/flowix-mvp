@@ -2,9 +2,20 @@
   "manifest_version": 3,
   "name": "Flowix MVP Extension",
   "version": "0.1.0",
+  "description": "Record user flows and capture steps to Flowix.",
+  "icons": {
+    "16": "fav.png",
+    "32": "fav.png",
+    "48": "fav.png",
+    "128": "fav.png"
+  },
   "action": {
     "default_title": "Flowix",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "fav.png",
+      "32": "fav.png"
+    }
   },
   "background": {
     "service_worker": "background.js",
