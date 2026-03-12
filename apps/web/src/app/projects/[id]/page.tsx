@@ -29,6 +29,8 @@ export default function ProjectPage() {
   const [creating, setCreating] = useState(false);
   const [isCreateFlowOpen, setIsCreateFlowOpen] = useState(false);
   const [openedFlowMenuId, setOpenedFlowMenuId] = useState<string | null>(null);
+  const [renameFlowId, setRenameFlowId] = useState<string | null>(null);
+  const [renameFlowValue, setRenameFlowValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -173,6 +175,30 @@ export default function ProjectPage() {
   const handleShareFlow = async (flowId: string) => {
     await navigator.clipboard.writeText(`${window.location.origin}/flows/${flowId}`);
     setActionMessage("Flow link copied");
+  };
+
+  const handleRenameFlow = async () => {
+    if (!renameFlowId || !renameFlowValue.trim()) return;
+    const supabase = getSupabaseClient();
+    const trimmed = renameFlowValue.trim();
+
+    const { error: updateError } = await supabase
+      .from("flows")
+      .update({ name: trimmed })
+      .eq("id", renameFlowId);
+
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+
+    setFlows((prev) =>
+      prev.map((f) => (f.id === renameFlowId ? { ...f, name: trimmed } : f))
+    );
+    setOpenedFlowMenuId(null);
+    setRenameFlowId(null);
+    setRenameFlowValue("");
+    setActionMessage("Flow renamed");
   };
 
   const handleDeleteFlow = async (flowId: string) => {
@@ -332,7 +358,11 @@ export default function ProjectPage() {
                     }
                     onShare={() => void handleShareFlow(flow.id)}
                     onDelete={() => void handleDeleteFlow(flow.id)}
-                    onRename={() => setActionMessage("Rename is not implemented yet")}
+                    onRename={() => {
+                      setRenameFlowId(flow.id);
+                      setRenameFlowValue(flow.name);
+                      setOpenedFlowMenuId(null);
+                    }}
                   />
                 ))}
               </div>
@@ -401,6 +431,27 @@ export default function ProjectPage() {
                 className="shadow-[0px_4px_8px_0px_rgba(0,0,0,0.12)]"
               />
             </form>
+          </div>
+        </>
+      ) : null}
+
+      {renameFlowId ? (
+        <>
+          <Overlay />
+          <div className="absolute inset-0 flex items-center justify-center px-4">
+            <ModalCreateProject
+              title="Change flow name"
+              projectName={renameFlowValue}
+              projectNamePlaceholder="Flow name"
+              ctaLabel="Save"
+              onProjectNameChange={setRenameFlowValue}
+              onClose={() => {
+                setRenameFlowId(null);
+                setRenameFlowValue("");
+              }}
+              onSubmit={() => void handleRenameFlow()}
+              className="shadow-[0px_4px_8px_0px_rgba(0,0,0,0.12)]"
+            />
           </div>
         </>
       ) : null}
