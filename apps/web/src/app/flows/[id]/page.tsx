@@ -197,7 +197,7 @@ export default function FlowPage() {
                 }}
                 onMouseDown={() => setBackPressed(true)}
                 onMouseUp={() => setBackPressed(false)}
-                className={`inline-flex h-8 w-8 items-center justify-center rounded-lg px-3 py-1.5 ${getHeaderNeutralButtonClasses(backHovered, backPressed)}`}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-lg ${getHeaderNeutralButtonClasses(backHovered, backPressed)}`}
                 aria-label="Back"
               >
                 <IconsFilled icon="Back" className="h-[18px] w-[18px] text-[#09090b]" />
@@ -239,7 +239,7 @@ export default function FlowPage() {
                 }}
                 onMouseDown={() => setSharePressed(true)}
                 onMouseUp={() => setSharePressed(false)}
-                className={`inline-flex h-[30px] w-8 items-center justify-center rounded-lg px-3 py-1.5 ${getHeaderTextButtonClasses(shareHovered, sharePressed)}`}
+                className={`inline-flex h-[30px] w-8 items-center justify-center rounded-lg ${getHeaderTextButtonClasses(shareHovered, sharePressed)}`}
                 aria-label="Share flow"
               >
                 <IconsLight icon="share" className="h-[18px] w-[18px] text-[#09090b]" />
@@ -254,7 +254,7 @@ export default function FlowPage() {
                 }}
                 onMouseDown={() => setDeletePressed(true)}
                 onMouseUp={() => setDeletePressed(false)}
-                className={`inline-flex h-[30px] w-8 items-center justify-center rounded-lg px-3 py-1.5 ${getHeaderTextButtonClasses(deleteHovered, deletePressed)}`}
+                className={`inline-flex h-[30px] w-8 items-center justify-center rounded-lg ${getHeaderTextButtonClasses(deleteHovered, deletePressed)}`}
                 aria-label="Delete flow"
               >
                 <IconsLight icon="delete" className="h-[18px] w-[18px] text-[#e31a24]" />

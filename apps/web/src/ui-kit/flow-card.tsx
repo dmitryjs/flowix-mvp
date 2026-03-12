@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Maximize2Icon } from "lucide-react";
 import { ClickArea } from "@/ui-kit/click-area";
 import { IconsFilled } from "@/ui-kit/icons-filled";
 import { IconsLight } from "@/ui-kit/icons-light";
@@ -66,7 +67,7 @@ export function FlowCard({
             onClick={onFullScreen}
             className="inline-flex h-[30px] w-8 items-center justify-center rounded-lg text-[#09090b] hover:bg-[#dfe2e6]"
           >
-            <IconsFilled icon="Expand" className="h-[18px] w-[18px]" />
+            <Maximize2Icon className="h-[18px] w-[18px]" />
           </button>
           <button
             type="button"
@@ -79,7 +80,21 @@ export function FlowCard({
         </div>
       </header>
 
-      <div className="relative h-[471px] w-full overflow-hidden rounded-xl border border-[#dbdcdd]">
+      <div
+        role={isHover || isOverlay ? "button" : undefined}
+        tabIndex={isHover || isOverlay ? 0 : undefined}
+        aria-label={isHover || isOverlay ? "Open full screen" : undefined}
+        onClick={isHover || isOverlay ? onFullScreen : undefined}
+        onKeyDown={
+          isHover || isOverlay
+            ? (e) => { if (e.key === "Enter" || e.key === " ") onFullScreen?.(); }
+            : undefined
+        }
+        className={cn(
+          "relative h-[471px] w-full overflow-hidden rounded-xl border border-[#dbdcdd]",
+          (isHover || isOverlay) && "cursor-pointer"
+        )}
+      >
         {imageSrc ? (
           <img src={imageSrc} alt={imageAlt} className="h-full w-full object-cover" />
         ) : (
@@ -88,8 +103,10 @@ export function FlowCard({
           </div>
         )}
 
-        {isOverlay && (
-          <div className="absolute inset-0 rounded-xl bg-[rgba(0,0,0,0.3)]" />
+        {(isHover || isOverlay) && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-[rgba(0,0,0,0.3)]">
+            <Maximize2Icon className="h-8 w-8 text-white opacity-80" />
+          </div>
         )}
 
         {clickPoint ? <ClickArea x={clickPoint.x} y={clickPoint.y} /> : null}
