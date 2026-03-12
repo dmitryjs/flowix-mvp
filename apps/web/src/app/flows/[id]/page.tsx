@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase";
 import { PUBLIC_STORAGE_BUCKET } from "@/lib/env";
-import { FlowCard, IconsFilled, IconsLight, ModalCreateProject, Overlay } from "@/ui-kit";
+import { FlowCard, IconsFilled, IconsLight, ModalCreateProject, Overlay, Snack } from "@/ui-kit";
 
 type Flow = {
   id: string;
@@ -448,13 +448,13 @@ export default function FlowPage() {
       ) : null}
 
       {error ? (
-        <div className="absolute left-1/2 top-10 -translate-x-1/2 rounded-lg border border-[#f0c3c6] bg-[#fff4f5] px-4 py-2 text-sm text-[#e31a24]">
-          {error}
+        <div className="absolute left-1/2 top-6 -translate-x-1/2">
+          <Snack type="error" message={error} onClose={() => setError(null)} />
         </div>
       ) : null}
       {actionMessage ? (
-        <div className="absolute left-1/2 top-10 -translate-x-1/2 rounded-lg border border-[#d7e5d4] bg-[#f2fff0] px-4 py-2 text-sm text-[#2f7d33]">
-          {actionMessage}
+        <div className="absolute left-1/2 top-6 -translate-x-1/2">
+          <Snack type="success" message={actionMessage} onClose={() => setActionMessage(null)} />
         </div>
       ) : null}
     </main>

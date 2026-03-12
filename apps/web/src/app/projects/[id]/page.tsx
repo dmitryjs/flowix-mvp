@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase";
-import { IconsFilled, IconsLight, ModalCreateProject, Overlay, TableProjectRow } from "@/ui-kit";
+import { IconsFilled, IconsLight, ModalCreateProject, Overlay, Snack, TableProjectRow } from "@/ui-kit";
 
 type Flow = {
   id: string;
@@ -29,6 +29,8 @@ export default function ProjectPage() {
   const [creating, setCreating] = useState(false);
   const [isCreateFlowOpen, setIsCreateFlowOpen] = useState(false);
   const [openedFlowMenuId, setOpenedFlowMenuId] = useState<string | null>(null);
+  const [isRenameProjectOpen, setIsRenameProjectOpen] = useState(false);
+  const [renameProjectValue, setRenameProjectValue] = useState("");
   const [renameFlowId, setRenameFlowId] = useState<string | null>(null);
   const [renameFlowValue, setRenameFlowValue] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -177,6 +179,28 @@ export default function ProjectPage() {
     setActionMessage("Flow link copied");
   };
 
+  const handleRenameProject = async () => {
+    if (!userId || !renameProjectValue.trim()) return;
+    const supabase = getSupabaseClient();
+    const trimmed = renameProjectValue.trim();
+
+    const { error: updateError } = await supabase
+      .from("projects")
+      .update({ name: trimmed })
+      .eq("id", projectId)
+      .eq("owner_id", userId);
+
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+
+    setProject((prev) => (prev ? { ...prev, name: trimmed } : prev));
+    setIsRenameProjectOpen(false);
+    setRenameProjectValue("");
+    setActionMessage("Project renamed");
+  };
+
   const handleRenameFlow = async () => {
     if (!renameFlowId || !renameFlowValue.trim()) return;
     const supabase = getSupabaseClient();
@@ -282,7 +306,10 @@ export default function ProjectPage() {
             <div className="flex h-[30px] items-center gap-1">
               <button
                 type="button"
-                onClick={() => setIsCreateFlowOpen(true)}
+                onClick={() => {
+                  setRenameProjectValue(project?.name ?? "");
+                  setIsRenameProjectOpen(true);
+                }}
                 onMouseEnter={() => setCreateHovered(true)}
                 onMouseLeave={() => {
                   setCreateHovered(false);
@@ -291,7 +318,7 @@ export default function ProjectPage() {
                 onMouseDown={() => setCreatePressed(true)}
                 onMouseUp={() => setCreatePressed(false)}
                 className={`inline-flex h-[30px] w-8 items-center justify-center rounded-lg text-[#09090b] ${getHeaderTextButtonClasses(createHovered, createPressed)}`}
-                aria-label="Create flow"
+                aria-label="Rename project"
               >
                 <IconsLight icon="edit" className="h-[18px] w-[18px]" />
               </button>
@@ -412,6 +439,27 @@ export default function ProjectPage() {
         </footer>
       </div>
 
+      {isRenameProjectOpen ? (
+        <>
+          <Overlay />
+          <div className="absolute inset-0 flex items-center justify-center px-4">
+            <ModalCreateProject
+              title="Change project name"
+              projectName={renameProjectValue}
+              projectNamePlaceholder="Project name"
+              ctaLabel="Save"
+              onProjectNameChange={setRenameProjectValue}
+              onClose={() => {
+                setIsRenameProjectOpen(false);
+                setRenameProjectValue("");
+              }}
+              onSubmit={() => void handleRenameProject()}
+              className="shadow-[0px_4px_8px_0px_rgba(0,0,0,0.12)]"
+            />
+          </div>
+        </>
+      ) : null}
+
       {isCreateFlowOpen ? (
         <>
           <Overlay />
@@ -457,13 +505,13 @@ export default function ProjectPage() {
       ) : null}
 
       {error ? (
-        <div className="absolute left-1/2 top-10 -translate-x-1/2 rounded-lg border border-[#f0c3c6] bg-[#fff4f5] px-4 py-2 text-sm text-[#e31a24]">
-          {error}
+        <div className="absolute left-1/2 top-6 -translate-x-1/2">
+          <Snack type="error" message={error} onClose={() => setError(null)} />
         </div>
       ) : null}
       {actionMessage ? (
-        <div className="absolute left-1/2 top-10 -translate-x-1/2 rounded-lg border border-[#d7e5d4] bg-[#f2fff0] px-4 py-2 text-sm text-[#2f7d33]">
-          {actionMessage}
+        <div className="absolute left-1/2 top-6 -translate-x-1/2">
+          <Snack type="success" message={actionMessage} onClose={() => setActionMessage(null)} />
         </div>
       ) : null}
     </main>
