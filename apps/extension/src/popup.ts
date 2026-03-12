@@ -12,6 +12,7 @@ type Project = {
 const statusRecordingEl = document.getElementById("statusRecording");
 const statusTokenEl = document.getElementById("statusToken");
 const statusFlowEl = document.getElementById("statusFlow");
+const statusStepsEl = document.getElementById("statusSteps");
 const messageEl = document.getElementById("message");
 const projectSelectEl = document.getElementById("projectSelect") as HTMLSelectElement | null;
 const syncBtn = document.getElementById("syncBtn");
@@ -43,6 +44,11 @@ function setFlowStatus(flowId: string | null) {
   if (copyFlowBtn instanceof HTMLButtonElement) {
     copyFlowBtn.disabled = !flowId;
   }
+}
+
+function setStepsStatus(stepIndex: number) {
+  if (!statusStepsEl) return;
+  statusStepsEl.textContent = `Steps recorded: ${stepIndex}`;
 }
 
 function setFlowActionsVisibility(recording: boolean, flowId: string | null) {
@@ -240,16 +246,19 @@ async function refreshStatus() {
     "projectId",
     "accessToken",
     "currentFlowId",
+    "stepIndex",
     "showFlowActions"
   ]);
   const recording = Boolean(result.recording);
   const accessToken = typeof result.accessToken === "string" ? result.accessToken : "";
   const currentFlowId = typeof result.currentFlowId === "string" ? result.currentFlowId : null;
+  const stepIndex = typeof result.stepIndex === "number" ? result.stepIndex : 0;
   const showFlowActions = result.showFlowActions === true;
 
   setRecordingStatus(recording);
   setTokenStatus(accessToken.trim());
   setFlowStatus(currentFlowId);
+  setStepsStatus(stepIndex);
   setFlowActionsVisibility(recording || !showFlowActions, currentFlowId);
   if (projectSelectEl && typeof result.projectId === "string") {
     projectSelectEl.value = result.projectId;
@@ -299,6 +308,7 @@ startBtn?.addEventListener("click", async () => {
   setRecordingStatus(true);
   setTokenStatus(accessToken);
   setFlowStatus(null);
+  setStepsStatus(0);
   setFlowActionsVisibility(true, null);
   setMessage("");
 });

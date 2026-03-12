@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase";
 import { PUBLIC_STORAGE_BUCKET } from "@/lib/env";
-import { FlowCard, IconsFilled, IconsLight, Overlay } from "@/ui-kit";
+import { FlowCard, IconsFilled, IconsLight, ModalCreateProject, Overlay } from "@/ui-kit";
 
 type Flow = {
   id: string;
@@ -39,6 +39,11 @@ export default function FlowPage() {
   const [overlayEnabled, setOverlayEnabled] = useState(false);
   const [hoveredStepId, setHoveredStepId] = useState<string | null>(null);
   const [previewStepId, setPreviewStepId] = useState<string | null>(null);
+  const [stepNames, setStepNames] = useState<Record<string, string>>({});
+  const [editNameStepId, setEditNameStepId] = useState<string | null>(null);
+  const [editNameValue, setEditNameValue] = useState("");
+  const [editUrlStepId, setEditUrlStepId] = useState<string | null>(null);
+  const [editUrlValue, setEditUrlValue] = useState("");
   const [backHovered, setBackHovered] = useState(false);
   const [backPressed, setBackPressed] = useState(false);
   const [shareHovered, setShareHovered] = useState(false);
@@ -165,6 +170,43 @@ export default function FlowPage() {
     }
     setSteps((prev) => prev.filter((step) => step.id !== stepId));
     setActionMessage("Step deleted");
+  };
+
+  const handleSaveStepName = (stepId: string) => {
+    const trimmed = editNameValue.trim();
+    if (trimmed) {
+      setStepNames((prev) => ({ ...prev, [stepId]: trimmed }));
+    }
+    setEditNameStepId(null);
+    setEditNameValue("");
+  };
+
+  const handleSaveStepUrl = async (stepId: string) => {
+    const trimmed = editUrlValue.trim();
+    if (!trimmed) {
+      setEditUrlStepId(null);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/flows/${flowId}/steps/${stepId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: trimmed }),
+      });
+      if (res.ok) {
+        setSteps((prev) =>
+          prev.map((s) => (s.id === stepId ? { ...s, url: trimmed } : s))
+        );
+        setActionMessage("URL updated");
+      } else {
+        const data = (await res.json()) as { error?: string };
+        setError(typeof data.error === "string" ? data.error : "Failed to update URL");
+      }
+    } catch {
+      setError("Failed to update URL");
+    }
+    setEditUrlStepId(null);
+    setEditUrlValue("");
   };
 
   const getHeaderNeutralButtonClasses = (hovered: boolean, pressed: boolean) => {
@@ -296,7 +338,7 @@ export default function FlowPage() {
                       className="w-full"
                     >
                       <FlowCard
-                        title={`Step ${step.step_index + 1}`}
+                        title={stepNames[step.id] ?? `Step ${step.step_index + 1}`}
                         url={step.url ?? "No URL"}
                         imageSrc={imageUrl || ""}
                         imageAlt={`Step ${step.step_index + 1}`}
@@ -313,7 +355,14 @@ export default function FlowPage() {
                           await navigator.clipboard.writeText(step.url ?? "");
                           setActionMessage("Step URL copied");
                         }}
-                        onEdit={() => setActionMessage("Edit step is not implemented yet")}
+                        onEdit={() => {
+                          setEditNameStepId(step.id);
+                          setEditNameValue(stepNames[step.id] ?? `Step ${step.step_index + 1}`);
+                        }}
+                        onEditUrl={() => {
+                          setEditUrlStepId(step.id);
+                          setEditUrlValue(step.url ?? "");
+                        }}
                         onFullScreen={() => setPreviewStepId(step.id)}
                       />
                     </div>
@@ -360,6 +409,40 @@ export default function FlowPage() {
                 </div>
               )}
             </div>
+          </div>
+        </>
+      ) : null}
+
+      {editNameStepId ? (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setEditNameStepId(null)} />
+          <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2">
+            <ModalCreateProject
+              title="Change step name"
+              projectName={editNameValue}
+              projectNamePlaceholder="Step name"
+              ctaLabel="Save"
+              onProjectNameChange={setEditNameValue}
+              onClose={() => setEditNameStepId(null)}
+              onSubmit={() => handleSaveStepName(editNameStepId)}
+            />
+          </div>
+        </>
+      ) : null}
+
+      {editUrlStepId ? (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setEditUrlStepId(null)} />
+          <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2">
+            <ModalCreateProject
+              title="Change step URL"
+              projectName={editUrlValue}
+              projectNamePlaceholder="https://example.com"
+              ctaLabel="Save"
+              onProjectNameChange={setEditUrlValue}
+              onClose={() => setEditUrlStepId(null)}
+              onSubmit={() => void handleSaveStepUrl(editUrlStepId)}
+            />
           </div>
         </>
       ) : null}

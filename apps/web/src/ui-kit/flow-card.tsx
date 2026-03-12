@@ -16,6 +16,7 @@ type FlowCardProps = {
   imageAlt?: string;
   clickPoint?: { x: number; y: number } | null;
   onEdit?: () => void;
+  onEditUrl?: () => void;
   onDelete?: () => void;
   onCopy?: () => void;
   onFullScreen?: () => void;
@@ -30,6 +31,7 @@ export function FlowCard({
   imageAlt = "Flow step screenshot",
   clickPoint = null,
   onEdit,
+  onEditUrl,
   onDelete,
   onCopy,
   onFullScreen,
@@ -105,7 +107,7 @@ export function FlowCard({
           <button
             type="button"
             aria-label="Edit URL"
-            onClick={onEdit}
+            onClick={onEditUrl}
             className="inline-flex h-6 w-6 items-center justify-center rounded-lg text-[#09090b] hover:bg-[#dfe2e6]"
           >
             <IconsFilled icon="edit" className="h-[18px] w-[18px]" />
