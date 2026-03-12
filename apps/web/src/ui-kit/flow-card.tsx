@@ -43,12 +43,7 @@ export function FlowCard({
       data-name="Flow card"
       data-node-id={isOverlay ? "91:3855" : isHover ? "91:3870" : "91:3840"}
     >
-      <header
-        className={cn(
-          "flex items-center justify-between",
-          !isHover && "px-1"
-        )}
-      >
+      <header className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           <h3 className="text-base font-semibold leading-4 text-[#09090b]">{title}</h3>
           <button
@@ -80,21 +75,7 @@ export function FlowCard({
         </div>
       </header>
 
-      <div
-        role={isHover || isOverlay ? "button" : undefined}
-        tabIndex={isHover || isOverlay ? 0 : undefined}
-        aria-label={isHover || isOverlay ? "Open full screen" : undefined}
-        onClick={isHover || isOverlay ? onFullScreen : undefined}
-        onKeyDown={
-          isHover || isOverlay
-            ? (e) => { if (e.key === "Enter" || e.key === " ") onFullScreen?.(); }
-            : undefined
-        }
-        className={cn(
-          "relative h-[471px] w-full overflow-hidden rounded-xl border border-[#dbdcdd]",
-          (isHover || isOverlay) && "cursor-pointer"
-        )}
-      >
+      <div className="relative h-[471px] w-full overflow-hidden rounded-xl border border-[#dbdcdd]">
         {imageSrc ? (
           <img src={imageSrc} alt={imageAlt} className="h-full w-full object-cover" />
         ) : (
@@ -103,10 +84,8 @@ export function FlowCard({
           </div>
         )}
 
-        {(isHover || isOverlay) && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-[rgba(0,0,0,0.3)]">
-            <Maximize2Icon className="h-8 w-8 text-white opacity-80" />
-          </div>
+        {isOverlay && (
+          <div className="absolute inset-0 rounded-xl bg-[rgba(0,0,0,0.3)]" />
         )}
 
         {clickPoint ? <ClickArea x={clickPoint.x} y={clickPoint.y} /> : null}
