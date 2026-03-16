@@ -199,8 +199,8 @@ async function captureStep(payload?: AutoCapturePayload): Promise<CaptureResult>
       return { ok: false, error: "Active tab not found" };
     }
 
-    const dataUrl = await chrome.tabs.captureVisibleTab(undefined, { format: "png" });
-    const file = dataUrlToFile(dataUrl, `step-${Date.now()}.png`);
+    const dataUrl = await chrome.tabs.captureVisibleTab(undefined, { format: "jpeg", quality: 72 });
+    const file = dataUrlToFile(dataUrl, `step-${Date.now()}.jpg`);
 
     const accessToken =
       typeof state.accessToken === "string" ? state.accessToken.trim() : "";

@@ -3,6 +3,9 @@ import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getAuthorizedUserId } from "@/lib/auth-server";
 
+const MAX_STEPS_PER_FLOW = 30;
+const MAX_STEPS_PER_MONTH = 200;
+
 const uploadStepSchema = z.object({
   file: z
     .instanceof(File)
@@ -142,7 +145,63 @@ export async function POST(
     return NextResponse.json({ error: "Flow not found" }, { status: 404 });
   }
 
-  const filePath = `user/${ownerId}/flows/${flowId}/${crypto.randomUUID()}.png`;
+  const { count: flowStepCount, error: flowCountError } = await supabase
+    .from("flow_steps")
+    .select("*", { count: "exact", head: true })
+    .eq("flow_id", flowId);
+
+  if (flowCountError) {
+    return NextResponse.json({ error: flowCountError.message }, { status: 500 });
+  }
+
+  if ((flowStepCount ?? 0) >= MAX_STEPS_PER_FLOW) {
+    return NextResponse.json(
+      {
+        error: "Flow step limit reached",
+        code: "FLOW_STEP_LIMIT",
+        limit: MAX_STEPS_PER_FLOW,
+      },
+      { status: 429 }
+    );
+  }
+
+  const { data: userFlows, error: userFlowsError } = await supabase
+    .from("flows")
+    .select("id")
+    .eq("owner_id", ownerId);
+
+  if (userFlowsError) {
+    return NextResponse.json({ error: userFlowsError.message }, { status: 500 });
+  }
+
+  const userFlowIds = (userFlows ?? []).map((f: { id: string }) => f.id);
+
+  if (userFlowIds.length > 0) {
+    const now = new Date();
+    const monthStart = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
+    ).toISOString();
+
+    const { count: monthlyStepCount, error: monthlyCountError } = await supabase
+      .from("flow_steps")
+      .select("*", { count: "exact", head: true })
+      .in("flow_id", userFlowIds)
+      .gte("created_at", monthStart);
+
+    if (!monthlyCountError && (monthlyStepCount ?? 0) >= MAX_STEPS_PER_MONTH) {
+      return NextResponse.json(
+        {
+          error: "Monthly step limit reached",
+          code: "MONTHLY_STEP_LIMIT",
+          limit: MAX_STEPS_PER_MONTH,
+        },
+        { status: 429 }
+      );
+    }
+  }
+
+  const ext = parsed.data.file.type === "image/jpeg" ? ".jpg" : ".png";
+  const filePath = `user/${ownerId}/flows/${flowId}/${crypto.randomUUID()}${ext}`;
 
   const { error: uploadError } = await supabase.storage
     .from(storageBucket)
