@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
-import { CreditCardIcon, LogOutIcon, UserIcon } from "lucide-react";
+import { LogOutIcon, UserIcon } from "lucide-react";
 import {
   ButtonFigma,
   ModalDeleteProject,
@@ -335,10 +335,6 @@ export default function ProjectsDashboardPage() {
                   >
                     <UserIcon className="h-4 w-4 shrink-0" />
                     My profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-[#09090b] hover:bg-[#eeeff0]">
-                    <CreditCardIcon className="h-4 w-4 shrink-0" />
-                    Billing
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-[#09090b] hover:bg-[#eeeff0]"
