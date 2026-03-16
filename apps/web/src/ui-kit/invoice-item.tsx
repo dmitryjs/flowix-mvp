@@ -1,3 +1,4 @@
+import React from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tags } from "@/ui-kit/tags";
