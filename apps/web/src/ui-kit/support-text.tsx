@@ -1,11 +1,11 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const supportTextVariants = cva("text-xs leading-4", {
+const supportTextVariants = cva("text-xs leading-4 tracking-[0.01px]", {
   variants: {
     type: {
-      hint: "text-muted-foreground",
-      error: "text-red-500",
+      hint: "text-[#8a8d94]",
+      error: "text-[#e31a24]",
     },
   },
   defaultVariants: {

@@ -5,6 +5,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Flowix MVP",
   description: "Flowix MVP web app",
+  icons: {
+    icon: "/fav.png",
+  },
 };
 
 type RootLayoutProps = {

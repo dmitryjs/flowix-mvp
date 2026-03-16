@@ -84,13 +84,14 @@ export function InvoiceItem({
               </p>
 
               {lines.map((line, index) => (
-                <div key={`${line.summary}-${index}`} className="border-t border-[#dbdcdd] pt-5 first:border-t-0 first:pt-0">
-                  <div className="flex items-center justify-between gap-4">
+                <React.Fragment key={`${line.summary}-${index}`}>
+                  <div className="h-px w-full bg-[#dbdcdd]" />
+                  <div className="flex items-center justify-between">
                     <div className="flex min-w-0 flex-1 flex-col gap-1">
                       <p className="text-xs font-medium leading-4 text-[#8a8d94]">SUMMARY</p>
                       <p className="text-sm font-medium leading-4 text-[#09090b]">{line.summary}</p>
                     </div>
-                    <div className="grid grid-cols-3 gap-8 text-right">
+                    <div className="flex items-center gap-[60px] text-right">
                       <div className="w-[119px]">
                         <p className="text-xs font-medium leading-4 text-[#8a8d94]">USAGE</p>
                         <p className="text-sm font-medium leading-4 text-[#09090b]">{line.usage}</p>
@@ -105,7 +106,7 @@ export function InvoiceItem({
                       </div>
                     </div>
                   </div>
-                </div>
+                </React.Fragment>
               ))}
             </div>
           </section>

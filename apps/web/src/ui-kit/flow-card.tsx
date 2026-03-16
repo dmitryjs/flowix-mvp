@@ -45,7 +45,7 @@ export function FlowCard({
       data-name="Flow card"
       data-node-id={isOverlay ? "91:3855" : isHover ? "91:3870" : "91:3840"}
     >
-      <header className="flex items-center justify-between px-1">
+      <header className={cn("flex items-center justify-between", !isHover && "px-1")}>
         <div className="flex items-center gap-2">
           <h3 className="text-base font-semibold leading-4 text-[#09090b]">{title}</h3>
           <button

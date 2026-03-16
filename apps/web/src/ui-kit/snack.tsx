@@ -56,7 +56,7 @@ export function Snack({
           isError ? "text-[#b41d24] hover:bg-[#f7bcc0]" : "text-[#298417] hover:bg-[#d3e8ce]"
         )}
       >
-        <XIcon className="h-4 w-4" />
+        <XIcon className="h-5 w-5" />
       </button>
     </div>
   );

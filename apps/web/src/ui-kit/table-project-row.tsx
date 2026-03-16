@@ -78,7 +78,7 @@ export function TableProjectRow({
           <button
             type="button"
             onClick={onRename}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium text-[#09090b] hover:bg-[#f8f8f9]"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium text-[#09090b] hover:bg-[#eeeff0]"
           >
             <IconsLight icon="edit" className="h-4 w-4" />
             Change name
@@ -86,7 +86,7 @@ export function TableProjectRow({
           <button
             type="button"
             onClick={onShare}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium text-[#09090b] hover:bg-[#f8f8f9]"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium text-[#09090b] hover:bg-[#eeeff0]"
           >
             <IconsLight icon="share" className="h-4 w-4" />
             Share
@@ -94,7 +94,7 @@ export function TableProjectRow({
           <button
             type="button"
             onClick={onDelete}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium text-[#e31a24] hover:bg-[#fff0f0]"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium text-[#e31a24] hover:bg-[#eeeff0]"
           >
             <IconsLight icon="delete" className="h-4 w-4" />
             Delete

@@ -37,19 +37,19 @@ const inputBaseVariants = cva(
   }
 );
 
-const labelVariants = cva("text-[10px] leading-[14px] tracking-[0.1px]", {
+const labelVariants = cva("text-[#8a8d94]", {
   variants: {
     state: {
-      typing: "text-[#8a8d94]",
-      focus: "text-[#8a8d94]",
-      filled: "text-[#8a8d94]",
-      disabledFilled: "text-[#8a8d94]",
-      errorFilled: "text-[#8a8d94]",
-      default: "text-[#8a8d94]",
-      hover: "text-[#8a8d94]",
-      active: "text-[#8a8d94]",
-      error: "text-[#8a8d94]",
-      disabled: "text-[#8a8d94]",
+      typing: "text-[10px] leading-[14px] tracking-[0.1px]",
+      focus: "text-[10px] leading-[14px] tracking-[0.1px]",
+      filled: "text-[10px] leading-[14px] tracking-[0.1px]",
+      disabledFilled: "text-[10px] leading-[14px] tracking-[0.1px]",
+      errorFilled: "text-[10px] leading-[14px] tracking-[0.1px]",
+      default: "text-[14px] leading-[20px]",
+      hover: "text-[14px] leading-[20px]",
+      active: "text-[14px] leading-[20px]",
+      error: "text-[14px] leading-[20px]",
+      disabled: "text-[14px] leading-[20px]",
     },
   },
   defaultVariants: {
